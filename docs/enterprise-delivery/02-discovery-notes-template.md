@@ -2,7 +2,7 @@
 
 **Client Name:** [Fictional European Insurer — e.g. Northstar Mutual EU]  
 **Date of Workshop:** [YYYY-MM-DD]  
-**Lead FDE:** [FDE Name]  
+**Lead Solutions Engineer:** [Engineer Name]  
 **Client Attendees:** Head of Architecture, Underwriting Lead, Security Officer, Product Owner.
 
 ---
@@ -38,8 +38,8 @@
 
 ## 3. Action Items & Next Steps
 
-| Action Item                                                   | Owner      | Target Date | Status    |
-| ------------------------------------------------------------- | ---------- | ----------- | --------- |
-| Configure rule version `v1` in `packages/rules/src/v1.ts`     | FDE Lead   | Week 1      | Completed |
-| Verify Docker Compose stack with PostgreSQL & Pricing Service | Dev Lead   | Week 2      | Completed |
-| Conduct Security Architecture & DPIA Review                   | CISO / FDE | Week 3      | Scheduled |
+| Action Item                                                   | Owner                    | Target Date | Status    |
+| ------------------------------------------------------------- | ------------------------ | ----------- | --------- |
+| Configure rule version `v1` in `packages/rules/src/v1.ts`     | Delivery Lead            | Week 1      | Completed |
+| Verify Docker Compose stack with PostgreSQL & Pricing Service | Dev Lead                 | Week 2      | Completed |
+| Conduct Security Architecture & DPIA Review                   | CISO / Architecture Lead | Week 3      | Scheduled |

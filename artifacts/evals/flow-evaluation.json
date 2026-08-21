@@ -1,6 +1,6 @@
 {
   "benchmarkDate": "2026-08-21",
-  "timestamp": "2026-08-21T15:24:02.539Z",
+  "timestamp": "2026-08-21T18:18:40.051Z",
   "totalScenarios": 24,
   "passedScenarios": 24,
   "failedScenarios": 0,
@@ -23,7 +23,7 @@
       "passed": true,
       "expected": "Calculated Spain premium with 14% tax",
       "actual": "€267.9 with 14.000000000000002% tax",
-      "latencyMs": 0
+      "latencyMs": 1
     },
     {
       "id": "SCN-003",
@@ -32,7 +32,7 @@
       "passed": true,
       "expected": "Calculated tenant discount premium in Portugal",
       "actual": "€57.5",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-004",
@@ -95,7 +95,7 @@
       "passed": true,
       "expected": "Active quote invalidated, step reverted to COLLECTING_PROPERTY, correction count incremented",
       "actual": "Active quote: undefined, Step: COLLECTING_PROPERTY, Corrections: 1",
-      "latencyMs": 1
+      "latencyMs": 2
     },
     {
       "id": "SCN-011",

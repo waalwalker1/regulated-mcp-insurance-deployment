@@ -2,13 +2,13 @@
 
 > **Roles:**
 >
-> - **FDE:** Forward Deployed Engineer (Lead Delivery Owner)
+> - **DEL-ENG:** Delivery Engineer / Solutions Architect (Lead Implementation Owner)
 > - **C-ARCH:** Client Lead Architect
 > - **UW:** Client Head of Underwriting / Actuarial
 > - **CISO:** Client Chief Information Security Officer
 > - **PM:** Client Project Manager
 
-| Project Milestone / Activity                        | FDE       | C-ARCH    | UW    | CISO  | PM  |
+| Project Milestone / Activity                        | DEL-ENG   | C-ARCH    | UW    | CISO  | PM  |
 | --------------------------------------------------- | --------- | --------- | ----- | ----- | --- |
 | Discovery Workshop & Questionnaire Completion       | **A / R** | C         | C     | C     | I   |
 | Architecture Pattern Selection (Hosted vs VPC)      | **R**     | **A**     | I     | C     | I   |

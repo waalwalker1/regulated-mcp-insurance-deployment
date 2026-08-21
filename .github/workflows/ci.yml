@@ -46,6 +46,53 @@ jobs:
             exit 1
           fi
 
+      - name: Verify Markdown Links
+        run: |
+          node -e '
+          const fs = require("fs");
+          const path = require("path");
+          function getFiles(dir) {
+            let results = [];
+            const list = fs.readdirSync(dir);
+            list.forEach(file => {
+              const full = path.join(dir, file);
+              const stat = fs.statSync(full);
+              if (stat && stat.isDirectory()) {
+                if (file !== "node_modules" && file !== ".git" && file !== "dist" && file !== "brain") {
+                  results = results.concat(getFiles(full));
+                }
+              } else if (file.endsWith(".md")) {
+                results.push(full);
+              }
+            });
+            return results;
+          }
+          const mdFiles = getFiles(".");
+          let broken = 0;
+          for (const file of mdFiles) {
+            const content = fs.readFileSync(file, "utf8");
+            const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+            let match;
+            while ((match = linkRegex.exec(content)) !== null) {
+              const rawLink = match[2].trim();
+              if (rawLink.startsWith("http://") || rawLink.startsWith("https://") || rawLink.startsWith("#") || rawLink.startsWith("mailto:")) {
+                continue;
+              }
+              const cleanLink = rawLink.split("#")[0];
+              if (!cleanLink) continue;
+              const resolved = path.resolve(path.dirname(file), cleanLink);
+              if (!fs.existsSync(resolved)) {
+                console.log(`BROKEN LINK in ${file}: "${rawLink}" -> ${resolved}`);
+                broken++;
+              }
+            }
+          }
+          if (broken > 0) {
+            console.log(`Found ${broken} broken markdown links!`);
+            process.exit(1);
+          }
+          '
+
       - name: Code Formatting Check
         run: npm run format:check
 

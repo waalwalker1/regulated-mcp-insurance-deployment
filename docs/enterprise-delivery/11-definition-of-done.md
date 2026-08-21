@@ -10,5 +10,5 @@ A release is declared complete and production-ready only when all of the followi
 - [x] **6. 24-Scenario Evaluation Green:** Automated evaluation benchmark (`make eval`) achieves 100% pass rate.
 - [x] **7. Security & Dependency Audit Clean:** `npm audit` reports zero high/critical vulnerabilities; no secrets committed to Git.
 - [x] **8. Containerized Build & Health Probes:** Docker Compose spins up with healthy status probes on `/health` and `/ready`.
-- [x] **9. Complete Documentation Library:** All 16 FDE documents, 16 procurement documents, and runbooks committed.
+- [x] **9. Complete Documentation Library:** All 16 enterprise delivery documents, 16 procurement/security documents, and operations runbooks committed.
 - [x] **10. Local Zero-Credential Runnable:** `make demo` runs out-of-the-box without paid third-party API credentials.

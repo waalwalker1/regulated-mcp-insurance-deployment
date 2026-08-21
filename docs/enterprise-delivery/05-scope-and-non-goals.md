@@ -6,8 +6,8 @@
 - **Deterministic Rules Engine:** Pure-function calculation for pricing, deductible discounts, tax calculations, and eligibility checks.
 - **Dual Persistence Adapters:** Local zero-credential in-memory store and Docker Compose PostgreSQL adapter.
 - **Cryptographic Audit Store:** Append-only SHA-256 hash chaining event logger with PII redaction.
-- **Comprehensive Enterprise Pack:** 16 FDE delivery documents, 16 procurement/security evidence documents, and STRIDE threat model.
-- **Verification Suite:** 32 Vitest unit/integration tests and 24-scenario automated evaluation benchmark.
+- **Comprehensive Enterprise Pack:** 16 enterprise delivery documents, 16 procurement/security evidence documents, and STRIDE threat model.
+- **Verification Suite:** 26 test files / 76 Vitest tests and 24-scenario automated evaluation benchmark.
 
 ---
 

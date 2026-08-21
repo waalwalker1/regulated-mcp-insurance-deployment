@@ -1,6 +1,6 @@
 # Executive Solution Brief — Regulated MCP Insurance Deployment Kit
 
-> **Target Audience:** Insurer Chief Technology Officer (CTO), Head of Underwriting, Chief Information Security Officer (CISO), and Forward Deployed Engineering (FDE) teams.
+> **Target Audience:** Insurer Chief Technology Officer (CTO), Head of Underwriting, Chief Information Security Officer (CISO), and Technical Delivery teams.
 
 ---
 

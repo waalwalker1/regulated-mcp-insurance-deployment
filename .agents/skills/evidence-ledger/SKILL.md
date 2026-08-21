@@ -5,7 +5,7 @@ description: Maintains traceability between requirements, implementation, tests,
 
 # Evidence Ledger
 
-Create and maintain `docs/agent/EVIDENCE_LEDGER.md` and `docs/portfolio/ROLE_REQUIREMENT_MAP.md`.
+Maintain `docs/VERIFICATION_MATRIX.md` and `docs/IMPLEMENTATION.md`.
 
 For every important requirement record:
 

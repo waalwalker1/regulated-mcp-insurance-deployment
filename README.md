@@ -1,4 +1,4 @@
-# Regulated MCP Insurance Deployment Kit
+# Regulated MCP Insurance Reference Architecture
 
 ### Deterministic Quoting Architecture & Enterprise Delivery Kit for European Insurance
 
@@ -7,25 +7,33 @@
 [![Node.js: v20+](https://img.shields.io/badge/Node.js-v20%2B-green.svg)](https://nodejs.org)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Strict%20Mode-blue.svg)](https://www.typescriptlang.org/)
 
-> **A production-shaped reference implementation demonstrating how a European insurer exposes a deterministic, non-binding home-insurance quote funnel through Model Context Protocol (MCP) using `@waniwani/sdk/mcp` with server-owned validation, pricing calculations, mandatory consent gating, and tamper-evident auditability.**
+An open-source reference implementation demonstrating how a European residential insurer exposes a deterministic, non-binding home-insurance quote funnel through Model Context Protocol (MCP) using `@waniwani/sdk/mcp` with server-owned validation, pure pricing rules, mandatory consent gating, and tamper-evident auditability.
 
 ---
 
-## ⚡ 90-Second Recruiter & Hiring Manager Scan
+## Overview
 
-- **Target Role:** Waniwani Forward Deployed Engineer (FDE) / Regulated Enterprise AI Solutions Architect.
-- **Core Problem Solved:** Conversational AI models hallucinate prices, bypass consent gates, and lack deterministic auditability. This kit implements the **deterministic server-authority pattern**: the AI assistant provides conversational natural-language extraction, while the compiled server core owns all state transitions, validation, actuarial formulas, consent gating, and cryptographic audit logging.
-- **SDK & Protocol Integration:** Genuine `@waniwani/sdk/mcp` typed flow (`createFlow`, `StateGraph`, `interrupt`, conditional branching) compiled and registered as **one primary MCP tool** (`get_home_insurance_quote`) on a standard `McpServer`.
-- **Zero-Credential Local Run:** The entire P0 workflow runs 100% locally with zero external API keys or cloud dependencies (`make demo`, `make test`, `make eval`).
-- **Proof-of-Work Evidence:**
-  - **26 Test Files / 76 Vitest Tests (100% passing)** spanning domain, rules, persistence, audit, official Streamable HTTP transport, Waniwani flow state in PostgreSQL, optimistic concurrency control, GDPR history scrubbing, idempotency conflicts, property-based tests (`fast-check`), and adversarial attacks.
-  - **24 Automated Evaluation Scenarios (100% passing in 7ms)** across 5 European countries (FR, ES, PT, DE, IT).
-  - **Real Persistence & Durable Audit:** Pluggable in-memory TTL store and real PostgreSQL adapter with parameterized SQL, schema migrations, and SHA-256 hash chain verification across restarts.
-  - **Enterprise FDE & Procurement Pack:** 32 enterprise artifacts including a 35-question security questionnaire, STRIDE threat model, RTM, RACI, and UAT plans.
+Conversational interfaces are increasingly being evaluated for multi-step transactional workflows such as financial services and insurance quotation.
+
+The primary engineering challenge is not extracting parameters from natural language. The primary challenge is **preserving deterministic business authority** around validation, underwriting eligibility, actuarial pricing, GDPR consent gating, state transitions, and auditability when the user interacts through a conversational assistant.
+
+This repository provides an open-source reference implementation of that architecture. A typed Waniwani flow manages the resumable conversation, while deterministic TypeScript services own business validation, underwriting eligibility, rule-versioned pricing, persistence, and audit logging.
+
+```text
+┌─────────────────────────┐       ┌────────────────────────────────────────────────────────┐
+│  Conversational Layer   │       │               Deterministic Server Core                │
+│  (MCP Client / LLM)     │ ────> │  • Strict Zod Schemas & Postcode Regex Validation      │
+│  • Field extraction     │       │  • Pure-Function Pricing Formulas (Versioned Rules)   │
+│  • Natural language UI  │       │  • Mandatory Consent Gate & Disclosure Attachment     │
+│  • Clarification loops  │       │  • Append-Only SHA-256 Cryptographic Audit Chain      │
+└─────────────────────────┘       └────────────────────────────────────────────────────────┘
+```
+
+The repository supports an instant, zero-credential local mode for development as well as PostgreSQL-backed and containerized deployment paths.
 
 ---
 
-## 1. Architecture & State Flow
+## Architecture & State Flow
 
 ```mermaid
 flowchart LR
@@ -55,56 +63,61 @@ flowchart LR
     Flow --> Audit
 ```
 
-### Core Invariants
+---
 
-1. **Server Pricing Authority:** Premiums are calculated via pure functions in compiled TypeScript ([`packages/rules/src/pricing.ts`](./packages/rules/src/pricing.ts)). LLM output can never directly set or alter premiums, multipliers, taxes, or eligibility outcomes.
-2. **Mandatory Consent Gate:** Quote calculation is hard-blocked until explicit data processing consent is recorded (`[CONSENT_REQUIRED]`).
-3. **Cryptographic Audit Trail:** Every lifecycle event appends a SHA-256 hash chaining back to session genesis ([`packages/audit/src/audit-store.ts`](./packages/audit/src/audit-store.ts)).
-4. **Idempotency & Replay Safety:** Quote calculations and adjustments accept idempotency keys and return cached quotes with audit tracking (`request.replayed`).
-5. **Zero-Credential Local Path:** Fully testable and runnable locally without paid third-party API credentials.
+## Core Design Principles
+
+1. **Server Authority:** The conversational model is strictly an extraction and rendering interface. The compiled server owns state transitions, required fields, validation, eligibility, pricing calculations, rule versions, consent gating, and audit logging.
+2. **Actuarial Determinism:** Premiums are calculated via pure functions in compiled TypeScript ([`packages/rules/src/pricing.ts`](./packages/rules/src/pricing.ts)). AI outputs can never directly set or alter premiums, multipliers, taxes, or eligibility outcomes.
+3. **Explicit Consent Gating:** Quote calculation is strictly blocked until explicit data processing consent is recorded (`[CONSENT_REQUIRED]`).
+4. **Tamper-Evident Auditability:** Every lifecycle event appends a SHA-256 hash chaining back to session genesis ([`packages/audit/src/audit-store.ts`](./packages/audit/src/audit-store.ts)).
+5. **Idempotency & Replay Safety:** Quote calculations and adjustments accept idempotency keys and return cached quotes with audit tracking (`request.replayed`). Conflicting payloads on the same key are safely rejected.
+6. **Zero-Credential Local Run:** The entire workflow runs locally out-of-the-box with zero external API keys or cloud dependencies.
 
 ---
 
-## 2. Key Capabilities
+## Features & Capabilities
 
-- **Multi-Country European Addressing:** Regex-validated postcode formats for France (`FR`), Spain (`ES`), Portugal (`PT`), Germany (`DE`), and Italy (`IT`).
-- **Underwriting Eligibility & Referrals:** Evaluates risk combinations (e.g. claims $>3$, large high-value villas) and emits explicit machine-readable reason codes.
+- **Resumable Conversational Funnel:** Genuine `@waniwani/sdk/mcp` state graph (`createFlow`, `interrupt`, `START`, `END`) compiled and registered as **one primary MCP tool** (`get_home_insurance_quote`).
+- **Multi-Country European Addressing:** Regex-validated postcode formats for France (`FR`), Spain (`ES`), Portugal (`PT`), Germany (`DE`), and Italy (`IT`) with conversational re-asking on invalid formatting.
+- **Underwriting Eligibility & Referrals:** Evaluates risk combinations (e.g. claims $\ge 4$, large villas $>250\text{ m}^2$) and emits explicit machine-readable reason codes.
 - **State Correction & Tiered Invalidation Loops:** Altering previously confirmed structural risk parameters automatically invalidates active quotes and resets consent.
 - **Dynamic Quote Adjustment:** Modify coverage tiers (`essential`, `comfort`, `premium`) and deductibles (€150 to €1000) on active quotes with idempotency protection.
-- **Hosted SaaS & Customer VPC Blueprints:** Complete deployment manifests, Docker Compose local stack, and a multi-criteria decision matrix.
-- **Enterprise Delivery & Procurement Pack:** 32 comprehensive artifacts including a 35-question security questionnaire, STRIDE threat model, RTM, RACI, and UAT plans.
+- **Official MCP Streamable HTTP Transport:** Direct `StreamableHTTPServerTransport` integration supporting stateful sessions, `/health`, and `/ready` probes.
+- **Dual Persistence Adapters:** Pluggable in-memory TTL store and real PostgreSQL adapter with parameterized SQL, schema migrations, and optimistic concurrency control.
+- **GDPR Right to Erasure:** Multi-table scrubbing removing contact emails from `quote_sessions` and `quote_history` while preserving cryptographic audit validity.
 
 ---
 
-## 3. Quickstart
+## Quickstart
 
 ### Prerequisites
 
 - Node.js `v20.x` or later
 - npm `v10.x` or later (Docker optional for containerized PostgreSQL)
 
-### 1-Command Verification
+### Installation & Run
 
 ```bash
 # 1. Install dependencies (idempotent, local)
-make setup
+npm run setup
 
 # 2. Run the full interactive demonstration
-make demo
+npm run demo
 
-# 3. Run all unit, protocol, property, and integration tests (55 tests)
-make test
+# 3. Run all unit, protocol, property, and integration tests
+npm test
 
 # 4. Run the 24-scenario automated evaluation benchmark
-make eval
+npm run eval
 
-# 5. Execute all release audit quality gates
-make release-check
+# 5. Execute all quality gates
+npm run release-check
 ```
 
 ---
 
-## 4. 60-Second Quoting Transcript
+## Example Quotation Workflow
 
 ```text
 [User]      "Hi, I need home insurance for my apartment in Paris (75008)."
@@ -136,25 +149,29 @@ make release-check
 
 ---
 
-## 5. Repository Structure
+## Repository Structure
 
 ```text
 ├── apps/
-│   ├── mcp-server/              # Waniwani compiled flow + MCP server (Stdio/HTTP)
-│   └── pricing-service/         # Fastify microservice (/health, /ready, /metrics, /calculate)
+│   ├── mcp-server/              # Waniwani compiled flow + MCP server (Stdio / Streamable HTTP)
+│   └── pricing-service/         # Fastify microservice (/health, /ready, /calculate)
 ├── packages/
 │   ├── domain/                  # Zod validation schemas, error taxonomy, state machine
 │   ├── rules/                   # Actuarial pricing engine, versioned rules (v1, v2), eligibility
-│   ├── persistence/             # SessionStore (InMemory with TTL & real PostgreSQL)
+│   ├── persistence/             # SessionStore (InMemory with TTL & PostgreSQL)
 │   ├── audit/                   # Append-only audit store with SHA-256 hash chaining & redactor
 │   └── security/                # Input sanitization, prompt injection detection, data catalog
 ├── docs/
-│   ├── CLAIMS_EVIDENCE_MATRIX.md # Complete claim-to-code traceability matrix
-│   ├── fde/                     # 16-document Enterprise FDE Delivery Pack (RTM, RACI, UAT, etc.)
-│   ├── procurement/             # 16-document Procurement & Security Library (35-question FAQ, DPIA)
-│   ├── architecture/            # Threat model (STRIDE), Hosted vs VPC blueprints, Data Flow
-│   ├── operations/              # Operational Runbook, migrations, and audit verification
-│   └── portfolio/               # Role requirement map, interview walkthrough, STAR stories
+│   ├── architecture/            # STRIDE threat model, Hosted vs VPC blueprints, Data Flow
+│   ├── decisions/               # Architecture Decision Records (ADRs)
+│   ├── demo/                    # Interactive demo scripts and technical walkthroughs
+│   ├── enterprise-delivery/     # Discovery questionnaire, RTM, RACI, UAT, and Go-Live plans
+│   ├── guides/                  # Technical deep dives and architecture failure mode guides
+│   ├── operations/              # Operational runbook, migrations, and audit verification
+│   ├── procurement/             # 35-question security questionnaire, DPIA template, data catalog
+│   ├── IMPLEMENTATION.md        # Technical implementation summary
+│   ├── RELEASE_VALIDATION.md    # Release verification record
+│   └── VERIFICATION_MATRIX.md   # Requirement-to-test traceability matrix
 ├── tests/                       # Unit, protocol, integration, property (fast-check), and adversarial tests
 ├── scripts/
 │   ├── demo-flow.ts             # Interactive demonstration runner
@@ -169,46 +186,89 @@ make release-check
 
 ---
 
-## 6. Measured Evidence & Evaluation Results
+## Testing & Verification
 
-All claims in this repository are backed by passing code and automated evaluation benchmarks:
+All architectural guarantees and invariants are verified via automated tests and reproducible evaluation benchmarks:
 
 | Evaluation Dimension                   | Measurement Tool                             | Scenarios / Tests          | Measured Result                     |
 | -------------------------------------- | -------------------------------------------- | -------------------------- | ----------------------------------- |
-| **Type Safety**                        | TypeScript Compiler (`tsc --noEmit`)         | Monorepo Strict Mode       | **0 Type Errors**                   |
+| **Code Formatting**                    | Prettier (`npm run format:check`)            | Whole Repository           | **100% Compliant**                  |
+| **Static Code Analysis**               | ESLint (`npm run lint`)                      | Monorepo TypeScript Files  | **0 Errors**                        |
+| **Type Safety**                        | TypeScript Compiler (`npm run typecheck`)    | Monorepo Strict Mode       | **0 Type Errors**                   |
 | **Unit, Protocol & Integration Suite** | Vitest Test Runner (`npm run test`)          | 26 Test Files, 76 Tests    | **76 Passed (100%)**                |
 | **Evaluation Benchmark**               | Automated Evaluation Runner (`npm run eval`) | 24 Multi-Country Scenarios | **24 Passed (100%, 7ms execution)** |
 | **Security Audit**                     | npm Dependency Audit (`npm run security`)    | Production Dependencies    | **0 High/Critical Vulnerabilities** |
 | **Audit Chain Integrity**              | SHA-256 Cryptographic Verification           | Lifecycle Event Logs       | **100% Unbroken Hash Chains**       |
 
-_Detailed claim verification is maintained in [`docs/CLAIMS_EVIDENCE_MATRIX.md`](./docs/CLAIMS_EVIDENCE_MATRIX.md)._
+_Detailed requirement-to-test traceability is documented in [`docs/VERIFICATION_MATRIX.md`](./docs/VERIFICATION_MATRIX.md)._
 
 ---
 
-## 7. Enterprise Delivery & Procurement Pack
+## Deployment Modes
 
-- **[Executive Solution Brief](./docs/fde/00-executive-solution-brief.md)**
-- **[Client Discovery Questionnaire](./docs/fde/01-client-discovery-questionnaire.md)**
-- **[Requirements Traceability Matrix (RTM)](./docs/fde/03-requirements-traceability-matrix.md)**
-- **[Hosted vs. Self-Hosted Decision Matrix](./docs/fde/07-hosted-vs-self-hosted-decision-matrix.md)**
-- **[35-Question Enterprise Security Questionnaire](./docs/procurement/12-security-questionnaire-sample.md)**
+### 1. Local Stdio Mode (Default)
+
+Used by MCP desktop clients (e.g. Claude Desktop, IDE extensions). Sessions and audit trails are stored in-memory with automatic TTL cleanup.
+
+```bash
+npm run dev
+```
+
+### 2. Streamable HTTP Network Mode
+
+Exposes standard MCP endpoints over HTTP using `StreamableHTTPServerTransport` with JSON-RPC streaming, `/health`, and `/ready` probes.
+
+```bash
+MCP_TRANSPORT=http PORT=3000 npm run dev
+```
+
+### 3. Docker Compose Stack (PostgreSQL + MCP Server + Pricing Service)
+
+Runs the full multi-service architecture locally with durable PostgreSQL storage and database migrations.
+
+```bash
+docker compose up --build
+```
+
+---
+
+## Enterprise Delivery & Security Documentation
+
+The repository includes enterprise documentation templates and blueprints designed for regulated technical reviews:
+
+- **[Technical Implementation Summary](./docs/IMPLEMENTATION.md)**
+- **[Requirements & Verification Matrix](./docs/VERIFICATION_MATRIX.md)**
+- **[Release Validation Record](./docs/RELEASE_VALIDATION.md)**
+- **[Architecture Decision Records (ADRs)](./docs/decisions/)**
+- **[Enterprise Delivery Pack](./docs/enterprise-delivery/)** (Discovery, RTM, RACI, UAT, Go-Live, Rollback)
+- **[Enterprise Security & Procurement Library](./docs/procurement/)** (35-Question Questionnaire, DPIA, Shared Responsibility)
 - **[STRIDE Threat Model](./docs/architecture/THREAT_MODEL.md)**
-- **[Data Protection Impact Assessment (DPIA) Inputs](./docs/procurement/14-dpia-input-template.md)**
-- **[Claims-Evidence Traceability Matrix](./docs/CLAIMS_EVIDENCE_MATRIX.md)**
 - **[Operations Runbook](./docs/operations/RUNBOOK.md)**
+- **[Technical Deep Dive Guide](./docs/guides/TECHNICAL_DEEP_DIVE.md)**
+- **[Demo Walkthrough Guide](./docs/demo/DEMO_WALKTHROUGH.md)**
 
 ---
 
-## 8. Known Limitations
+## Security & Privacy
 
-1. **Indicative Quotation Only:** Northstar Home Insurance EU is a synthetic reference model. Issued quotes are non-binding estimates and do not bind legal underwriting contracts or collect payment.
-2. **Illustrative Actuarial Factors:** Pricing coefficients in `packages/rules/src/v1.ts` are simplified demonstration multipliers and do not reflect proprietary actuarial tables.
-3. **No External Cloud Deployment Claim:** The repository is validated locally via zero-credential runners and Docker Compose; no third-party cloud infrastructure was provisioned.
+- **Data Minimization:** No personal data (e.g. email) is collected or processed until the explicit quotation delivery step.
+- **Cryptographic Auditability:** All state transitions and calculations append to an immutable, hash-chained audit log.
+- **Automated PII Redaction:** Structured log metadata masks email addresses and authentication tokens before hashing or logging.
+- **Right to Erasure:** Session anonymization utility scrubs PII across sessions and quote history tables while preserving audit chain integrity.
+- **Prompt Injection Defense:** Input sanitizers validate formats and reject instruction injection attempts in address and metadata fields.
 
 ---
 
-## 9. Non-Affiliation Statement & License
+## Known Limitations
 
-This repository is an independent technical proof-of-work demonstration built with open-source MIT-licensed packages (`@waniwani/sdk`, `@modelcontextprotocol/sdk`). It is not affiliated with, endorsed by, or sponsored by Waniwani AI, Anthropic, or any commercial insurer.
+1. **Synthetic Reference Insurer:** Northstar Home Insurance EU is a synthetic reference model for demonstration and educational purposes.
+2. **Non-Binding Quotations:** Generated quotes are indicative estimates and do not bind formal underwriting policies or collect financial payment.
+3. **Illustrative Actuarial Factors:** Pricing formulas and risk multipliers in `packages/rules/src/v1.ts` are demonstration values and do not represent proprietary actuarial tables.
+
+---
+
+## Non-Affiliation Statement & License
+
+This repository is an independent open-source reference implementation built with public MIT-licensed packages (`@waniwani/sdk`, `@modelcontextprotocol/sdk`). It is not affiliated with, endorsed by, or sponsored by Waniwani AI, Anthropic, or any commercial insurer.
 
 Licensed under the [MIT License](./LICENSE).

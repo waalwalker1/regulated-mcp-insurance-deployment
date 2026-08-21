@@ -1,6 +1,6 @@
 # Client Technical Discovery Questionnaire
 
-> **Purpose:** FDE guide for enterprise technical workshops with insurance client stakeholders (Underwriting, IT Security, Cloud Architecture, Legal/Compliance).
+> **Purpose:** Technical workshop guide for enterprise deployment teams and insurance client stakeholders (Underwriting, IT Security, Cloud Architecture, Legal/Compliance).
 
 ---
 

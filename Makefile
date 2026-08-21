@@ -68,7 +68,7 @@ security:
 
 build:
 	@echo "==> Compiling TypeScript monorepo..."
-	npx tsc --noEmit
+	npm run build
 
 release-check:
 	@echo "=========================================="

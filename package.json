@@ -2,7 +2,7 @@
   "name": "regulated-mcp-insurance-deployment",
   "version": "0.3.0",
   "private": true,
-  "description": "Regulated MCP Insurance Deployment Kit — Production-shaped reference architecture for deterministic insurance quote funnels with server-owned validation, pricing, consent, and auditability.",
+  "description": "Open-source reference architecture for deterministic, auditable insurance quotation workflows using MCP, Waniwani SDK, TypeScript, and PostgreSQL.",
   "type": "module",
   "workspaces": [
     "packages/*",
@@ -32,12 +32,15 @@
   "keywords": [
     "mcp",
     "model-context-protocol",
-    "insurance",
-    "fintech",
-    "typescript",
     "waniwani",
-    "security",
-    "forward-deployed-engineering"
+    "insurance",
+    "insurtech",
+    "regulated-workflows",
+    "deterministic-ai",
+    "typescript",
+    "postgresql",
+    "auditability",
+    "enterprise-ai"
   ],
   "author": "Northstar Deployment Kit Contributors",
   "license": "MIT",

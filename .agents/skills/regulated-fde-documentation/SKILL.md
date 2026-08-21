@@ -1,9 +1,9 @@
 ---
-name: regulated-fde-documentation
+name: enterprise-delivery-documentation
 description: Produces realistic discovery, architecture, procurement, security, delivery, UAT, go-live, and handover templates for a regulated enterprise deployment.
 ---
 
-# Regulated Fde Documentation
+# Enterprise Delivery Documentation
 
 Every document must have:
 
