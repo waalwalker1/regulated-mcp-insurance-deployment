@@ -1,0 +1,16 @@
+# Requirements Traceability Matrix (RTM)
+
+| Req ID | Business Requirement | Technical Requirement | Implementation Path | Validating Test / Evidence | Acceptance State |
+|---|---|---|---|---|---|
+| **REQ-001** | Multi-country European home insurance quote collection | Strict schema validation per country (FR, ES, PT, DE, IT) with postcode format regex | `packages/domain/src/schemas.ts` | `tests/domain.test.ts`, SCN-001 to SCN-005 in `scripts/run-eval.ts` | **VERIFIED** |
+| **REQ-002** | Deterministic, non-hallucinatory pricing calculation | Pure-function pricing engine with versioned multipliers (base rate, property, area, occupancy, claims, deductible discount, tax) | `packages/rules/src/pricing.ts` | `tests/pricing.test.ts`, SCN-015 to SCN-024 in `scripts/run-eval.ts` | **VERIFIED** |
+| **REQ-003** | Underwriting eligibility with automated referral | Rules engine checking claims threshold and high-value risk combinations, returning reason codes | `packages/rules/src/eligibility.ts` | `tests/eligibility.test.ts`, SCN-006 & SCN-007 | **VERIFIED** |
+| **REQ-004** | Mandatory GDPR data processing consent gating | State machine blocks quote calculation and email dispatch until explicit consent is recorded | `packages/domain/src/state-machine.ts`, `packages/rules/src/quote-generator.ts` | `tests/mcp-funnel.test.ts`, SCN-008 in `scripts/run-eval.ts` | **VERIFIED** |
+| **REQ-005** | State machine correction and re-asking loops | Changing declared risk factors invalidates active quote and returns session to appropriate collection step | `packages/domain/src/state-machine.ts` | `tests/domain.test.ts`, SCN-010 in `scripts/run-eval.ts` | **VERIFIED** |
+| **REQ-006** | Dynamic quote adjustment without restarting flow | Dedicated adjustment tool to modify coverage tiers and deductibles on active quotes | `apps/mcp-server/src/funnel-engine.ts` | `tests/mcp-funnel.test.ts`, SCN-011 in `scripts/run-eval.ts` | **VERIFIED** |
+| **REQ-007** | Cryptographic tamper-evident audit logging | Append-only event store computing continuous SHA-256 hash chains across all state transitions | `packages/audit/src/audit-store.ts` | `tests/audit.test.ts`, SCN-013 in `scripts/run-eval.ts` | **VERIFIED** |
+| **REQ-008** | PII minimization and log redaction | Automated masking of email addresses and secrets in audit logs | `packages/audit/src/redactor.ts` | `tests/audit.test.ts` | **VERIFIED** |
+| **REQ-009** | Multi-tenant session isolation | UUID-isolated session store preventing cross-tenant leakage | `packages/persistence/src/memory-store.ts` | `tests/session-isolation.test.ts`, SCN-014 | **VERIFIED** |
+| **REQ-010** | Prompt injection defense | Input sanitization scanning for adversarial prompt manipulation in text fields | `packages/security/src/sanitizer.ts` | `tests/security.test.ts`, `tests/adversarial.test.ts`, SCN-009 | **VERIFIED** |
+| **REQ-011** | Zero-credential local demonstration | Fully functional local runner without third-party API keys or paid accounts | `scripts/demo-flow.ts`, `Makefile` | `make demo`, `make release-check` | **VERIFIED** |
+| **REQ-012** | Enterprise containerization and health checks | Docker Compose configuration with PostgreSQL and microservice health probes (`/health`, `/ready`) | `docker-compose.yml`, `apps/*/Dockerfile` | `tests/pricing-service.test.ts` | **VERIFIED** |

@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@northstar/domain": ["packages/domain/src/index.ts"],
+      "@northstar/rules": ["packages/rules/src/index.ts"],
+      "@northstar/persistence": ["packages/persistence/src/index.ts"],
+      "@northstar/audit": ["packages/audit/src/index.ts"],
+      "@northstar/security": ["packages/security/src/index.ts"]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*",
+    "apps/*/src/**/*",
+    "tests/**/*",
+    "scripts/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build"
+  ]
+}

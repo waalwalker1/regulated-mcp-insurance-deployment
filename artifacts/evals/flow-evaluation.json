@@ -1,0 +1,227 @@
+{
+  "benchmarkDate": "2026-08-21",
+  "timestamp": "2026-08-21T12:12:10.648Z",
+  "totalScenarios": 24,
+  "passedScenarios": 24,
+  "failedScenarios": 0,
+  "successRatePercent": 100,
+  "totalDurationMs": 11,
+  "results": [
+    {
+      "id": "SCN-001",
+      "name": "France Apartment Standard Quote",
+      "category": "HAPPY_PATH",
+      "passed": true,
+      "expected": "€161.66 annual premium, active status",
+      "actual": "€161.66 annual premium, active status",
+      "latencyMs": 5
+    },
+    {
+      "id": "SCN-002",
+      "name": "Spain Detached House Quote",
+      "category": "HAPPY_PATH",
+      "passed": true,
+      "expected": "Calculated Spain premium with 14% tax",
+      "actual": "€267.9 with 14.000000000000002% tax",
+      "latencyMs": 1
+    },
+    {
+      "id": "SCN-003",
+      "name": "Portugal Tenant Apartment Essential Tier",
+      "category": "HAPPY_PATH",
+      "passed": true,
+      "expected": "Calculated tenant discount premium in Portugal",
+      "actual": "€57.5",
+      "latencyMs": 0
+    },
+    {
+      "id": "SCN-004",
+      "name": "Germany Landlord Terraced House Premium Tier",
+      "category": "HAPPY_PATH",
+      "passed": true,
+      "expected": "German 19% tax rate and premium tier multipliers",
+      "actual": "€428.1 (19% tax)",
+      "latencyMs": 1
+    },
+    {
+      "id": "SCN-005",
+      "name": "Italy Villa Standard Risk",
+      "category": "HAPPY_PATH",
+      "passed": true,
+      "expected": "Italian 21% tax rate and villa 1.6x multiplier",
+      "actual": "€432.33 (21% tax, x1.6 property multiplier)",
+      "latencyMs": 0
+    },
+    {
+      "id": "SCN-006",
+      "name": "Excessive Claims Underwriting Referral",
+      "category": "UNDERWRITING_REFERRAL",
+      "passed": true,
+      "expected": "REFERRED step with CLAIMS_THRESHOLD_EXCEEDED reason code",
+      "actual": "Step REFERRED, reason: CLAIMS_THRESHOLD_EXCEEDED",
+      "latencyMs": 1
+    },
+    {
+      "id": "SCN-007",
+      "name": "High-Value Complex Risk Referral",
+      "category": "UNDERWRITING_REFERRAL",
+      "passed": true,
+      "expected": "REFERRED with HIGH_VALUE_HIGH_CLAIMS_REFERRAL",
+      "actual": "Step REFERRED, reason: HIGH_VALUE_HIGH_CLAIMS_REFERRAL",
+      "latencyMs": 0
+    },
+    {
+      "id": "SCN-008",
+      "name": "Mandatory Consent Invariant Enforcement",
+      "category": "SECURITY_ADVERSARIAL",
+      "passed": true,
+      "expected": "Server throws [CONSENT_REQUIRED] exception",
+      "actual": "Server threw [CONSENT_REQUIRED] exception",
+      "latencyMs": 1
+    },
+    {
+      "id": "SCN-009",
+      "name": "Prompt Injection Defense in Postcode",
+      "category": "SECURITY_ADVERSARIAL",
+      "passed": true,
+      "expected": "Blocked with [TAMPERING_DETECTED]",
+      "actual": "Blocked and security audit event logged",
+      "latencyMs": 0
+    },
+    {
+      "id": "SCN-010",
+      "name": "State Correction Invalidation Loop",
+      "category": "STATE_CORRECTION",
+      "passed": true,
+      "expected": "Active quote invalidated, step reverted to COLLECTING_PROPERTY, correction count incremented",
+      "actual": "Active quote: undefined, Step: COLLECTING_PROPERTY, Corrections: 1",
+      "latencyMs": 0
+    },
+    {
+      "id": "SCN-011",
+      "name": "Dynamic Deductible Adjustment",
+      "category": "STATE_CORRECTION",
+      "passed": true,
+      "expected": "Reduced total premium reflecting €1000 deductible discount",
+      "actual": "€61.36 (down from €161.66)",
+      "latencyMs": 1
+    },
+    {
+      "id": "SCN-012",
+      "name": "Rule Version Replay & Fingerprint Reproducibility",
+      "category": "INTEGRITY_REPLAY",
+      "passed": true,
+      "expected": "Replayed quote under v1 rules matches original hash and price perfectly",
+      "actual": "Original: 36d5b534..., Replayed: 36d5b534...",
+      "latencyMs": 0
+    },
+    {
+      "id": "SCN-013",
+      "name": "Cryptographic SHA-256 Audit Chain Verification",
+      "category": "INTEGRITY_REPLAY",
+      "passed": true,
+      "expected": "Unbroken SHA-256 hash sequence verified across all lifecycle events",
+      "actual": "Chain Valid: true, Events Verified: 9",
+      "latencyMs": 1
+    },
+    {
+      "id": "SCN-014",
+      "name": "Multi-Tenant Session Isolation",
+      "category": "SECURITY_ADVERSARIAL",
+      "passed": true,
+      "expected": "Complete state segregation between concurrent sessions",
+      "actual": "Session A: FR, Session B: DE",
+      "latencyMs": 0
+    },
+    {
+      "id": "SCN-015",
+      "name": "Parametric Matrix: FR / semi_detached / 151_250_sqm / €150",
+      "category": "HAPPY_PATH",
+      "passed": true,
+      "expected": "Deterministic positive non-NaN premium",
+      "actual": "€378.60 (Net: €320.85, Tax: €57.75)",
+      "latencyMs": 0
+    },
+    {
+      "id": "SCN-016",
+      "name": "Parametric Matrix: FR / terraced_house / 50_100_sqm / €500",
+      "category": "HAPPY_PATH",
+      "passed": true,
+      "expected": "Deterministic positive non-NaN premium",
+      "actual": "€202.72 (Net: €171.80, Tax: €30.92)",
+      "latencyMs": 0
+    },
+    {
+      "id": "SCN-017",
+      "name": "Parametric Matrix: ES / apartment / under_50_sqm / €300",
+      "category": "HAPPY_PATH",
+      "passed": true,
+      "expected": "Deterministic positive non-NaN premium",
+      "actual": "€102.83 (Net: €90.20, Tax: €12.63)",
+      "latencyMs": 0
+    },
+    {
+      "id": "SCN-018",
+      "name": "Parametric Matrix: ES / villa / 151_250_sqm / €1000",
+      "category": "HAPPY_PATH",
+      "passed": true,
+      "expected": "Deterministic positive non-NaN premium",
+      "actual": "€417.42 (Net: €366.16, Tax: €51.26)",
+      "latencyMs": 0
+    },
+    {
+      "id": "SCN-019",
+      "name": "Parametric Matrix: PT / detached_house / 101_150_sqm / €300",
+      "category": "HAPPY_PATH",
+      "passed": true,
+      "expected": "Deterministic positive non-NaN premium",
+      "actual": "€242.22 (Net: €210.63, Tax: €31.59)",
+      "latencyMs": 0
+    },
+    {
+      "id": "SCN-020",
+      "name": "Parametric Matrix: PT / terraced_house / 50_100_sqm / €500",
+      "category": "HAPPY_PATH",
+      "passed": true,
+      "expected": "Deterministic positive non-NaN premium",
+      "actual": "€199.39 (Net: €173.38, Tax: €26.01)",
+      "latencyMs": 0
+    },
+    {
+      "id": "SCN-021",
+      "name": "Parametric Matrix: DE / apartment / 50_100_sqm / €300",
+      "category": "HAPPY_PATH",
+      "passed": true,
+      "expected": "Deterministic positive non-NaN premium",
+      "actual": "€179.10 (Net: €150.50, Tax: €28.60)",
+      "latencyMs": 0
+    },
+    {
+      "id": "SCN-022",
+      "name": "Parametric Matrix: DE / detached_house / 151_250_sqm / €500",
+      "category": "HAPPY_PATH",
+      "passed": true,
+      "expected": "Deterministic positive non-NaN premium",
+      "actual": "€402.14 (Net: €337.93, Tax: €64.21)",
+      "latencyMs": 0
+    },
+    {
+      "id": "SCN-023",
+      "name": "Parametric Matrix: IT / semi_detached / 101_150_sqm / €300",
+      "category": "HAPPY_PATH",
+      "passed": true,
+      "expected": "Deterministic positive non-NaN premium",
+      "actual": "€335.01 (Net: €276.87, Tax: €58.14)",
+      "latencyMs": 0
+    },
+    {
+      "id": "SCN-024",
+      "name": "Parametric Matrix: IT / apartment / under_50_sqm / €150",
+      "category": "HAPPY_PATH",
+      "passed": true,
+      "expected": "Deterministic positive non-NaN premium",
+      "actual": "€152.46 (Net: €126.00, Tax: €26.46)",
+      "latencyMs": 0
+    }
+  ]
+}

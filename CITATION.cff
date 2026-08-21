@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this reference kit in your research or architecture benchmarks, please cite it as below."
+authors:
+  - family-names: "Northstar Deployment Kit Contributors"
+title: "Regulated MCP Insurance Deployment Kit: Deterministic Quoting Architecture for Enterprise Assistants"
+version: 0.1.0
+date-released: 2026-08-21
+url: "https://github.com/northstar-ai/regulated-mcp-insurance-deployment"
+license: MIT
+keywords:
+  - "model-context-protocol"
+  - "mcp"
+  - "insurance"
+  - "fintech"
+  - "deterministic-pricing"
+  - "forward-deployed-engineering"

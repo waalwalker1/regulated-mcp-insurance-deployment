@@ -1,0 +1,17 @@
+# Task Dependency DAG
+
+| Task ID | Priority | Prerequisite IDs | Owner Agent | Write Scope | Acceptance Test / Criteria | Status | Handoff Path |
+|---|---|---|---|---|---|---|---|
+| **W0-ENV** | P0 | None | `pow-orchestrator` | Root, `docs/agent/` | Environment & upstream package versions verified | DONE | `docs/agent-handoffs/w0-env.md` |
+| **W1-BOOTSTRAP** | P0 | W0-ENV | `pow-orchestrator` | `.agents/**`, `AGENTS.md`, Ledgers, `Makefile` | Canonical commands configured and ledgers initialized | IN_PROGRESS | `docs/agent-handoffs/w1-bootstrap.md` |
+| **W2-DOMAIN** | P0 | W1-BOOTSTRAP | `insurance-domain-engineer` | `packages/domain/**`, `packages/rules/**` | Unit & property tests for pricing formulas, validation, consent, rule versioning | PLANNED | `docs/agent-handoffs/w2-domain.md` |
+| **W3-MCP-FUNNEL** | P0 | W2-DOMAIN | `waniwani-sdk-specialist` | `apps/mcp-server/**` | MCP tool registration, typed state graph, interrupt/correction flows, simulated driver | PLANNED | `docs/agent-handoffs/w3-mcp-funnel.md` |
+| **W4-PERSIST-AUDIT** | P0 | W2-DOMAIN | `persistence-audit-engineer` | `packages/persistence/**`, `packages/audit/**` | Session TTL, memory + Postgres store adapters, tamper-evident audit hash chain | PLANNED | `docs/agent-handoffs/w4-persist-audit.md` |
+| **W5-SECURITY** | P0 | W2-DOMAIN, W3-MCP-FUNNEL | `procurement-security-specialist` | `SECURITY.md`, `PRIVACY.md`, `packages/security/**` | Redaction helpers, prompt injection protection tests, data classification | PLANNED | `docs/agent-handoffs/w5-security.md` |
+| **W6-FDE-PACK** | P0 | W1-BOOTSTRAP | `fde-discovery-architect` | `docs/fde/**`, `docs/architecture/**` | Complete 16-document FDE delivery pack, diagrams, requirements traceability | PLANNED | `docs/agent-handoffs/w6-fde-pack.md` |
+| **W7-PROCUREMENT** | P0 | W5-SECURITY, W6-FDE-PACK | `procurement-security-specialist` | `docs/procurement/**` | Complete 16-document procurement evidence pack, security questionnaire, DPIA | PLANNED | `docs/agent-handoffs/w7-procurement.md` |
+| **W8-DEPLOY-RUNBOOKS** | P1 | W3-MCP-FUNNEL, W4-PERSIST-AUDIT | `waniwani-sdk-specialist`, `persistence-audit-engineer` | `docker-compose.yml`, Dockerfiles, `docs/runbooks/**` | Local container composition & operational runbooks validated | PLANNED | `docs/agent-handoffs/w8-deploy-runbooks.md` |
+| **W9-QA-ADVERSARIAL** | P0 | W3-MCP-FUNNEL, W4-PERSIST-AUDIT, W5-SECURITY | `integration-qa-engineer` | `tests/**`, `evals/**`, `artifacts/evals/**` | 20+ automated scenarios passing; deterministic evaluation report generated | PLANNED | `docs/agent-handoffs/w9-qa-adversarial.md` |
+| **W10-DEMO-PORTFOLIO** | P1 | W9-QA-ADVERSARIAL, W6-FDE-PACK | `docs-demo-release-agent` | `README.md`, `docs/portfolio/**`, `docs/DEMO_SCRIPT.md` | 5/15/30-minute demo scripts, 45-min work-sample rehearsal, recruiter-ready README | PLANNED | `docs/agent-handoffs/w10-demo-portfolio.md` |
+| **W11-INDEPENDENT-AUDIT** | P0 | All prior tasks | `independent-release-auditor` | `docs/agent/RELEASE_AUDIT.md`, `docs/agent/INDEPENDENT_AUDIT.md` | Rigorous read-only audit for invariants, evidence grounding, and safety | PLANNED | `docs/agent-handoffs/w11-independent-audit.md` |
+| **W12-RELEASE-PACKAGE** | P0 | W11-INDEPENDENT-AUDIT | `pow-orchestrator` | `docs/BUILD_REPORT.md`, `CHANGELOG.md`, `LICENSE`, `THIRD_PARTY_NOTICES.md` | `make release-check` passes 100%; clean release build | PLANNED | `docs/agent-handoffs/w12-release-package.md` |

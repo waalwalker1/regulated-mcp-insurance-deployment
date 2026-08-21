@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: northstar-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: northstar
+      POSTGRES_PASSWORD: northstar_dev_pass
+      POSTGRES_DB: northstar_quotes
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U northstar -d northstar_quotes"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pricing-service:
+    build:
+      context: .
+      dockerfile: apps/pricing-service/Dockerfile
+    container_name: northstar-pricing-service
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      NODE_ENV: production
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  mcp-server:
+    build:
+      context: .
+      dockerfile: apps/mcp-server/Dockerfile
+    container_name: northstar-mcp-server
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      pricing-service:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      PERSISTENCE_MODE: postgres
+      DATABASE_URL: postgresql://northstar:northstar_dev_pass@postgres:5432/northstar_quotes
+      PRICING_SERVICE_URL: http://pricing-service:3001
+
+volumes:
+  pgdata:

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+.turbo/
+coverage/
+*.log
+artifacts/logs/*.log
+.env
+.DS_Store

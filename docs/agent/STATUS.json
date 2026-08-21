@@ -1,0 +1,43 @@
+{
+  "project": "regulated-mcp-insurance-deployment",
+  "build_spec_version": "2026-08-21",
+  "phase": "release_ready",
+  "release_status": "green",
+  "p0": {
+    "total": 12,
+    "done": 12,
+    "blocked": 0
+  },
+  "gates": {
+    "install": "pass",
+    "lint": "pass",
+    "typecheck": "pass",
+    "unit_tests": "pass",
+    "integration_tests": "pass",
+    "e2e": "pass",
+    "evals": "pass",
+    "security": "pass",
+    "docs": "pass",
+    "demo": "pass",
+    "license": "pass"
+  },
+  "owners": {
+    "pow-orchestrator": "Root config, integration, release check — Complete",
+    "waniwani-sdk-specialist": "apps/mcp-server, @waniwani/sdk adapters — Complete",
+    "insurance-domain-engineer": "packages/domain, packages/rules — Complete",
+    "fde-discovery-architect": "docs/fde, architecture models — Complete",
+    "procurement-security-specialist": "docs/procurement, threat model, security policies — Complete",
+    "persistence-audit-engineer": "packages/persistence, packages/audit — Complete",
+    "integration-qa-engineer": "tests, evals, demo verification — Complete",
+    "docs-demo-release-agent": "README.md, docs/portfolio, demo scripts — Complete",
+    "independent-release-auditor": "docs/agent/RELEASE_AUDIT.md, independent audit — Complete"
+  },
+  "active_branches": [
+    "main"
+  ],
+  "known_failures": [],
+  "credential_dependent_features": [
+    "Waniwani Hosted Platform Telemetry (Optional, active only when WANIWANI_API_KEY is supplied)"
+  ],
+  "last_updated_utc": "2026-08-21T12:10:00Z"
+}
