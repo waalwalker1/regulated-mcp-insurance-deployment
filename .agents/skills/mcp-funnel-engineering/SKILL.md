@@ -8,6 +8,7 @@ description: Implements deterministic Waniwani/MCP funnels with typed server-sid
 Use the current Waniwani SDK rather than remembered APIs.
 
 Required design:
+
 - typed Zod state;
 - one clear flow ID/version;
 - interrupt-driven user input;

@@ -6,6 +6,7 @@ description: Turns requirements and invariants into executable tests before or a
 # Test First Contract
 
 For every P0 capability:
+
 1. state the invariant in plain English;
 2. write a failing test or acceptance check;
 3. implement the minimal real behavior;

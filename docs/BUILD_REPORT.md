@@ -8,6 +8,7 @@
 ---
 
 ## 1. What Was Actually Built
+
 The repository contains a fully working, production-shaped TypeScript monorepo with 5 core packages, 2 deployable applications, test suites, evaluation scripts, and an enterprise document library:
 
 1. **`@northstar/domain` (`packages/domain`):**
@@ -37,6 +38,7 @@ The repository contains a fully working, production-shaped TypeScript monorepo w
 ---
 
 ## 2. System Architecture
+
 ```text
 ┌──────────────────────────────┐
 │  MCP Client / User Assistant │
@@ -64,17 +66,19 @@ The repository contains a fully working, production-shaped TypeScript monorepo w
 ---
 
 ## 3. Role-to-Proof Map (Waniwani Forward Deployed Engineer)
-| Hiring Manager Concern | Concrete Repository Evidence |
-|---|---|
-| *"Can they understand Waniwani's actual SDK and MCP models?"* | Genuine `@waniwani/sdk/mcp` flow compilation (`createFlow`, `StateGraph`, `interrupt`, conditional edges) registered as one primary MCP tool in `apps/mcp-server/`. |
-| *"Can they scope an enterprise flow rather than build a chatbot?"* | Full discovery questionnaire, 12-row RTM, RACI, DoR/DoD, and 6-week delivery roadmap in `docs/fde/`. |
-| *"Can they reason about Hosted vs. Self-Hosted architectures?"* | Dual-topology blueprints, trust boundaries, network egress maps, and multi-criteria scoring matrix in `docs/fde/07` and `docs/architecture/`. |
-| *"Can they navigate security and procurement committees?"* | 35-question security questionnaire, STRIDE threat model, DPIA inputs, and PII redactor in `docs/procurement/`. |
-| *"Can they handle regulated flows safely?"* | Pure deterministic pricing math, mandatory consent gate, and SHA-256 cryptographic audit hash chains in `packages/rules/` and `packages/audit/`. |
+
+| Hiring Manager Concern                                             | Concrete Repository Evidence                                                                                                                                        |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _"Can they understand Waniwani's actual SDK and MCP models?"_      | Genuine `@waniwani/sdk/mcp` flow compilation (`createFlow`, `StateGraph`, `interrupt`, conditional edges) registered as one primary MCP tool in `apps/mcp-server/`. |
+| _"Can they scope an enterprise flow rather than build a chatbot?"_ | Full discovery questionnaire, 12-row RTM, RACI, DoR/DoD, and 6-week delivery roadmap in `docs/fde/`.                                                                |
+| _"Can they reason about Hosted vs. Self-Hosted architectures?"_    | Dual-topology blueprints, trust boundaries, network egress maps, and multi-criteria scoring matrix in `docs/fde/07` and `docs/architecture/`.                       |
+| _"Can they navigate security and procurement committees?"_         | 35-question security questionnaire, STRIDE threat model, DPIA inputs, and PII redactor in `docs/procurement/`.                                                      |
+| _"Can they handle regulated flows safely?"_                        | Pure deterministic pricing math, mandatory consent gate, and SHA-256 cryptographic audit hash chains in `packages/rules/` and `packages/audit/`.                    |
 
 ---
 
 ## 4. Commands Run & Verification Evidence
+
 All commands were executed locally and recorded:
 
 ```bash
@@ -100,6 +104,7 @@ make release-check      # Exit code 0, ALL GATES PASSED
 ---
 
 ## 5. Measured Results
+
 - **Type Errors:** 0
 - **Test Files:** 19 passed (100%)
 - **Total Unit, Integration, Protocol & Property Tests:** 55 passed (100%)
@@ -111,6 +116,7 @@ make release-check      # Exit code 0, ALL GATES PASSED
 ---
 
 ## 6. Unmeasured / Explicit Non-Claims
+
 - **Real Insurer Production Deployment:** Not performed. Northstar Home Insurance EU is an intentionally fictional brand.
 - **Formal SOC 2 / ISO 27001 Certification:** Not measured / Not applicable to standalone open-source kits.
 - **Real Customer PII / Live Actuarial Binding:** Not performed. Operates strictly with synthetic, transparent demonstration data.
@@ -119,6 +125,7 @@ make release-check      # Exit code 0, ALL GATES PASSED
 ---
 
 ## 7. Known Limitations
+
 1. **Indicative Quotes Only:** All quotes generated are non-binding demonstration estimates.
 2. **Simplified Actuarial Factors:** Multipliers in `packages/rules/src/v1.ts` are simplified demonstration numbers and do not reflect proprietary risk models.
 3. **Local Storage Default:** In-memory store is active by default for instant zero-dependency execution. PostgreSQL is provided via Docker Compose for durable mode.
@@ -126,6 +133,7 @@ make release-check      # Exit code 0, ALL GATES PASSED
 ---
 
 ## 8. Security & Privacy Review Summary
+
 - **Input Sanitization:** Scans for prompt injection attacks and strips script tags.
 - **Log Hygiene:** Automated masking of contact emails (`ja***@example.com`) and removal of credentials before audit storage.
 - **Audit Non-Repudiation:** Continuous SHA-256 hash chaining from session genesis.
@@ -134,6 +142,7 @@ make release-check      # Exit code 0, ALL GATES PASSED
 ---
 
 ## 9. License and Dependency Review
+
 - **Repository License:** MIT License ([`LICENSE`](../LICENSE)).
 - **Third-Party Dependencies:** Permissive MIT, Apache-2.0, and BSD-2-Clause licenses only ([`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)).
 - **Zero Committed Secrets:** Verified via code review and clean Git working tree.

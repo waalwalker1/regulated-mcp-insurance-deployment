@@ -3,16 +3,19 @@
 > **Mission:** Deliver a production-shaped, interview-defensible reference kit demonstrating how a European insurer exposes a deterministic, non-binding home-insurance quote funnel through Model Context Protocol (MCP) while maintaining server-owned validation, pricing, consent, auditability, and clear hosted/self-hosted deployment boundaries.
 
 ## Target-Role Context
+
 - **Target Role:** Waniwani Forward Deployed Engineer (FDE).
 - **Core Ownership:** The lifecycle between a signed enterprise deal and live deployment — discovery, architecture, procurement/security evidence, solution design, and delivery governance.
 - **Brand & Affiliation:** Independent open-source technical proof-of-work built with public MIT-licensed SDKs. Not affiliated with or endorsed by Waniwani.
 
 ## Priority Tiers
+
 - **P0 (Mandatory):** Deterministic quote domain, Zod validation, MCP funnel with interrupts/correction loops, consent gating, append-only audit trail, zero-credential local demo path, FDE discovery & solution pack, procurement/security evidence library, unit/integration/adversarial test suite, reproducible evaluation script.
 - **P1 (Production Polish):** Docker Compose local stack, structured JSON logging with correlation IDs, demo scripts, interview walkthroughs.
 - **P2 (Stretch):** Optional PostgreSQL/Redis adapter demonstrations, optional telemetry adapters (active only when explicit environment variables are configured).
 
 ## Non-Negotiable Invariants
+
 1. **Server Authority:** The LLM is strictly a conversational extraction and rendering interface. The deterministic server owns state transitions, required fields, validation, eligibility, pricing calculations, rule versions, consent gating, and audit logging.
 2. **Pricing Determinism:** LLM output can never directly set or alter premiums, multipliers, taxes, or eligibility outcomes.
 3. **Consent Gating:** No final quote is issued or contact details processed without explicit, recorded consent.
@@ -20,6 +23,7 @@
 5. **No Paid Credential Blocker:** The core P0 workflow must run end-to-end locally with zero external API keys or cloud dependencies.
 
 ## Canonical Command Interface
+
 ```bash
 make setup          # Install dependencies (idempotent, local)
 make dev            # Run local interactive MCP server & quote engine
@@ -35,6 +39,7 @@ make clean-generated # Clean temporary build/eval artifacts
 ```
 
 ## Control Plane & Ledgers
+
 - Specifications: [BUILD_SPEC.md](./BUILD_SPEC.md)
 - Status Ledger: [docs/agent/STATUS.json](./docs/agent/STATUS.json)
 - Task Dependency DAG: [docs/agent/TASK_DAG.md](./docs/agent/TASK_DAG.md)
@@ -46,6 +51,7 @@ make clean-generated # Clean temporary build/eval artifacts
 - Remediation Release Audit: [docs/agent/REMEDIATION_RELEASE_AUDIT.md](./docs/agent/REMEDIATION_RELEASE_AUDIT.md)
 
 ## Subsystem & File Ownership
+
 - **Orchestrator:** Root configs, Makefile, package coordination, releases.
 - **SDK Specialist:** `apps/mcp-server/**`, SDK integration adapters, `docs/architecture/WANIWANI_SDK_NOTES.md`.
 - **Domain Engineer:** `packages/domain/**`, `packages/rules/**`, deterministic pricing/eligibility.

@@ -1,4 +1,4 @@
-import type { AuditEvent } from '@northstar/domain';
+import type { AuditEvent } from "@northstar/domain";
 
 export interface AuditRepository {
   append(event: AuditEvent): Promise<void>;

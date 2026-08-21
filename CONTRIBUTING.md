@@ -1,6 +1,7 @@
 # Contributing Guide
 
 ## Development Principles
+
 1. **Preserve Determinism:** Never allow conversational LLM models to directly calculate premiums or bypass underwriting rules.
 2. **Test-First Contracts:** Every new feature or rule addition must be accompanied by unit, property, and integration tests in `tests/`.
 3. **Audit Integrity:** All new state machine transitions must emit corresponding `AuditEvent` records with cryptographic hash chaining.
@@ -9,6 +10,7 @@
 ---
 
 ## Local Development Workflow
+
 ```bash
 make setup          # Install dependencies
 make dev            # Start local MCP server

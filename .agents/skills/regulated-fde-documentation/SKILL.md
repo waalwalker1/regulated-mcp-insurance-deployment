@@ -6,6 +6,7 @@ description: Produces realistic discovery, architecture, procurement, security, 
 # Regulated Fde Documentation
 
 Every document must have:
+
 - purpose;
 - owner;
 - inputs;

@@ -1,11 +1,11 @@
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { createNorthstarMcpServer, startHttpMcpServer } from './server.js';
-import { FunnelEngine } from './funnel-engine.js';
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { createNorthstarMcpServer, startHttpMcpServer } from "./server.js";
+import { FunnelEngine } from "./funnel-engine.js";
 
 async function bootstrap() {
-  const transportMode = process.env.MCP_TRANSPORT || 'stdio';
+  const transportMode = process.env.MCP_TRANSPORT || "stdio";
 
-  if (transportMode === 'http') {
+  if (transportMode === "http") {
     const port = Number(process.env.MCP_PORT || 3000);
     await startHttpMcpServer(port);
   } else {
@@ -14,13 +14,13 @@ async function bootstrap() {
     const transport = new StdioServerTransport();
 
     await server.connect(transport);
-    console.error('[Northstar MCP Server] Running on stdio transport.');
+    console.error("[Northstar MCP Server] Running on stdio transport.");
   }
 }
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== "test") {
   bootstrap().catch((err) => {
-    console.error('[Northstar MCP Server] Fatal startup error:', err);
+    console.error("[Northstar MCP Server] Fatal startup error:", err);
     process.exit(1);
   });
 }

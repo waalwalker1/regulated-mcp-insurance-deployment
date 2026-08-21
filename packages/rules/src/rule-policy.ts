@@ -1,15 +1,21 @@
-import { DomainError, type QuoteInput, type GeneratedQuote } from '@northstar/domain';
-import { getRuleSet } from './registry.js';
-import { evaluateEligibility } from './eligibility.js';
-import { calculatePricing } from './pricing.js';
-import { computeCanonicalQuoteFingerprint } from './hasher.js';
+import {
+  DomainError,
+  type QuoteInput,
+  type GeneratedQuote,
+} from "@northstar/domain";
+import { getRuleSet } from "./registry.js";
+import { evaluateEligibility } from "./eligibility.js";
+import { calculatePricing } from "./pricing.js";
+import { computeCanonicalQuoteFingerprint } from "./hasher.js";
 
 export interface RulePolicyProvider {
   getActiveRuleVersion(context?: { country?: string }): string;
 }
 
 export class DefaultRulePolicyProvider implements RulePolicyProvider {
-  constructor(private readonly activeVersion: string = 'northstar-home-eu-v1') {}
+  constructor(
+    private readonly activeVersion: string = "northstar-home-eu-v1",
+  ) {}
 
   getActiveRuleVersion(_context?: { country?: string }): string {
     return this.activeVersion;
@@ -37,8 +43,8 @@ export function replayHistoricalQuote(params: {
   const ruleSet = getRuleSet(params.originalRuleVersion);
   if (!ruleSet) {
     throw new DomainError(
-      'INVALID_INPUT',
-      `Historical rule version '${params.originalRuleVersion}' is not recognized in rule registry.`
+      "INVALID_INPUT",
+      `Historical rule version '${params.originalRuleVersion}' is not recognized in rule registry.`,
     );
   }
 
@@ -48,7 +54,7 @@ export function replayHistoricalQuote(params: {
     ruleVersion: ruleSet.version,
     input: params.input,
     pricing: replayedPricing,
-    eligibility: replayedEligibility
+    eligibility: replayedEligibility,
   });
 
   return {
@@ -57,6 +63,8 @@ export function replayHistoricalQuote(params: {
     replayedPricing,
     replayedEligibility,
     replayedHash,
-    isHashMatch: params.expectedQuoteHash ? replayedHash === params.expectedQuoteHash : true
+    isHashMatch: params.expectedQuoteHash
+      ? replayedHash === params.expectedQuoteHash
+      : true,
   };
 }

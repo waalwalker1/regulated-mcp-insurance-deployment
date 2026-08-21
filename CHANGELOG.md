@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2026-08-21
 
 ### Added
+
 - **MCP Funnel Server:** Model Context Protocol gateway with typed state graph, interrupt/resume flows, and dynamic adjustment tools.
 - **Deterministic Rules Core:** Pure-function pricing breakdown, country-specific tax calculations, and eligibility engine with explicit reason codes.
 - **Rule Versioning & Replay:** Versioned rule sets (`northstar-home-eu-v1`, `v2`) with cryptographic quote hash verification and historical replay tests.

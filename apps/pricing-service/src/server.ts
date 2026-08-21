@@ -1,13 +1,13 @@
-import Fastify, { type FastifyInstance } from 'fastify';
-import { QuoteInputSchema, ConsentDeclarationSchema } from '@northstar/domain';
+import Fastify, { type FastifyInstance } from "fastify";
+import { QuoteInputSchema, ConsentDeclarationSchema } from "@northstar/domain";
 import {
   evaluateEligibility,
   calculatePricing,
   computeCanonicalQuoteFingerprint,
   getRuleSet,
-  defaultRulePolicyProvider
-} from '@northstar/rules';
-import { randomUUID } from 'node:crypto';
+  defaultRulePolicyProvider,
+} from "@northstar/rules";
+import { randomUUID } from "node:crypto";
 
 export interface MetricsState {
   totalEvaluations: number;
@@ -16,62 +16,113 @@ export interface MetricsState {
   startTime: number;
 }
 
-export function buildPricingServer(): { app: FastifyInstance; metrics: MetricsState } {
+export function buildPricingServer(): {
+  app: FastifyInstance;
+  metrics: MetricsState;
+} {
   const app = Fastify({
-    logger: false
+    logger: false,
   });
 
   const metrics: MetricsState = {
     totalEvaluations: 0,
     totalCalculations: 0,
     totalRejections: 0,
-    startTime: Date.now()
+    startTime: Date.now(),
   };
 
   // Health and Readiness
-  app.get('/health', async () => {
-    return { status: 'healthy', timestamp: new Date().toISOString() };
+  app.get("/health", async () => {
+    return { status: "healthy", timestamp: new Date().toISOString() };
   });
 
-  app.get('/ready', async () => {
+  app.get("/ready", async () => {
     return {
       ready: true,
       uptimeSeconds: Math.floor((Date.now() - metrics.startTime) / 1000),
-      activeRuleVersion: defaultRulePolicyProvider.getActiveRuleVersion()
+      activeRuleVersion: defaultRulePolicyProvider.getActiveRuleVersion(),
     };
   });
 
-  app.get('/metrics', async () => {
+  app.get("/metrics", async () => {
     return {
       totalEvaluations: metrics.totalEvaluations,
       totalCalculations: metrics.totalCalculations,
       totalRejections: metrics.totalRejections,
-      uptimeSeconds: Math.floor((Date.now() - metrics.startTime) / 1000)
+      uptimeSeconds: Math.floor((Date.now() - metrics.startTime) / 1000),
     };
   });
 
-  // Evaluate Eligibility (Server-Owned Rule Version)
-  app.post('/api/v1/quote/evaluate', async (request, reply) => {
+  // Internal Route: Evaluate Underwriting Eligibility (Server-Owned Rule Version)
+  app.post("/internal/v1/eligibility/evaluate", async (request, reply) => {
+    metrics.totalEvaluations++;
+    const body = request.body as { input: unknown };
+    const parseResult = QuoteInputSchema.safeParse(body?.input);
+
+    if (!parseResult.success) {
+      metrics.totalRejections++;
+      return reply.status(400).send({
+        error: "INVALID_INPUT",
+        details: parseResult.error.flatten(),
+      });
+    }
+
+    const ruleVersion = defaultRulePolicyProvider.getActiveRuleVersion({
+      country: parseResult.data.country,
+    });
+    const ruleSet = getRuleSet(ruleVersion);
+    const eligibility = evaluateEligibility(parseResult.data, ruleSet);
+
+    return reply.status(200).send({ eligibility });
+  });
+
+  // Internal Route: Calculate Deterministic Pricing Breakdown
+  app.post("/internal/v1/pricing/calculate", async (request, reply) => {
+    metrics.totalCalculations++;
+    const body = request.body as { input: unknown };
+    const parseResult = QuoteInputSchema.safeParse(body?.input);
+
+    if (!parseResult.success) {
+      metrics.totalRejections++;
+      return reply.status(400).send({
+        error: "INVALID_INPUT",
+        details: parseResult.error.flatten(),
+      });
+    }
+
+    const ruleVersion = defaultRulePolicyProvider.getActiveRuleVersion({
+      country: parseResult.data.country,
+    });
+    const ruleSet = getRuleSet(ruleVersion);
+    const pricing = calculatePricing(parseResult.data, ruleSet);
+
+    return reply.status(200).send({ pricing, ruleVersion: ruleSet.version });
+  });
+
+  // Public / Legacy Route: Evaluate Eligibility
+  app.post("/api/v1/quote/evaluate", async (request, reply) => {
     metrics.totalEvaluations++;
     const parseResult = QuoteInputSchema.safeParse(request.body);
 
     if (!parseResult.success) {
       metrics.totalRejections++;
       return reply.status(400).send({
-        error: 'INVALID_INPUT',
-        details: parseResult.error.flatten()
+        error: "INVALID_INPUT",
+        details: parseResult.error.flatten(),
       });
     }
 
-    const ruleVersion = defaultRulePolicyProvider.getActiveRuleVersion({ country: parseResult.data.country });
+    const ruleVersion = defaultRulePolicyProvider.getActiveRuleVersion({
+      country: parseResult.data.country,
+    });
     const ruleSet = getRuleSet(ruleVersion);
     const eligibility = evaluateEligibility(parseResult.data, ruleSet);
 
     return reply.status(200).send(eligibility);
   });
 
-  // Calculate Deterministic Quote (Consent Required)
-  app.post('/api/v1/quote/calculate', async (request, reply) => {
+  // Public / Legacy Route: Calculate Deterministic Quote (Consent Required)
+  app.post("/api/v1/quote/calculate", async (request, reply) => {
     metrics.totalCalculations++;
     const body = request.body as {
       sessionId?: string;
@@ -83,8 +134,8 @@ export function buildPricingServer(): { app: FastifyInstance; metrics: MetricsSt
     if (!inputParse.success) {
       metrics.totalRejections++;
       return reply.status(400).send({
-        error: 'INVALID_INPUT',
-        details: inputParse.error.flatten()
+        error: "INVALID_INPUT",
+        details: inputParse.error.flatten(),
       });
     }
 
@@ -92,21 +143,24 @@ export function buildPricingServer(): { app: FastifyInstance; metrics: MetricsSt
     if (!consentParse.success) {
       metrics.totalRejections++;
       return reply.status(403).send({
-        error: 'CONSENT_REQUIRED',
-        message: 'Explicit data processing consent must be confirmed before quote generation.',
-        details: consentParse.error.flatten()
+        error: "CONSENT_REQUIRED",
+        message:
+          "Explicit data processing consent must be confirmed before quote generation.",
+        details: consentParse.error.flatten(),
       });
     }
 
-    const ruleVersion = defaultRulePolicyProvider.getActiveRuleVersion({ country: inputParse.data.country });
+    const ruleVersion = defaultRulePolicyProvider.getActiveRuleVersion({
+      country: inputParse.data.country,
+    });
     const ruleSet = getRuleSet(ruleVersion);
     const eligibility = evaluateEligibility(inputParse.data, ruleSet);
 
     if (!eligibility.isEligible) {
       metrics.totalRejections++;
       return reply.status(422).send({
-        error: 'INELIGIBLE_RISK',
-        eligibility
+        error: "INELIGIBLE_RISK",
+        eligibility,
       });
     }
 
@@ -115,7 +169,7 @@ export function buildPricingServer(): { app: FastifyInstance; metrics: MetricsSt
       ruleVersion: ruleSet.version,
       input: inputParse.data,
       pricing,
-      eligibility
+      eligibility,
     });
 
     const now = new Date();
@@ -133,7 +187,7 @@ export function buildPricingServer(): { app: FastifyInstance; metrics: MetricsSt
       pricing,
       mandatoryDisclosure: ruleSet.mandatoryDisclosure,
       isBinding: false,
-      status: 'active'
+      status: "active",
     };
 
     return reply.status(200).send(quote);

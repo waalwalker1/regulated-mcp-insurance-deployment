@@ -1,4 +1,5 @@
 # Waniwani Regulated MCP Insurance Deployment Kit
+
 ## 9/10 Remediation & Upgrade Specification
 
 **Repository:** `waalwalker1/regulated-mcp-insurance-deployment`  
@@ -52,17 +53,17 @@ The repository should be considered **9/10 or better** only when all P0 acceptan
 
 ### Target scoring model
 
-| Dimension | Weight | Target |
-|---|---:|---:|
-| Waniwani SDK / role-specific proof | 15 | 14+ |
-| Deterministic domain logic & invariants | 18 | 17+ |
-| MCP / protocol correctness | 12 | 11+ |
-| Persistence, audit & deployment realism | 12 | 10+ |
-| Security / privacy engineering | 10 | 9+ |
-| Tests, evaluation & CI evidence | 12 | 11+ |
-| FDE / procurement documentation | 12 | 11+ |
-| Recruiter / OSS / evidence quality | 9 | 8+ |
-| **Total** | **100** | **90+** |
+| Dimension                               |  Weight |  Target |
+| --------------------------------------- | ------: | ------: |
+| Waniwani SDK / role-specific proof      |      15 |     14+ |
+| Deterministic domain logic & invariants |      18 |     17+ |
+| MCP / protocol correctness              |      12 |     11+ |
+| Persistence, audit & deployment realism |      12 |     10+ |
+| Security / privacy engineering          |      10 |      9+ |
+| Tests, evaluation & CI evidence         |      12 |     11+ |
+| FDE / procurement documentation         |      12 |     11+ |
+| Recruiter / OSS / evidence quality      |       9 |      8+ |
+| **Total**                               | **100** | **90+** |
 
 ---
 
@@ -550,8 +551,8 @@ The existing transition graph must become enforceable behavior, not documentatio
 Every state-changing operation must call a central method, for example:
 
 ```ts
-assertStep(session, expectedSteps)
-transition(session, targetStep)
+assertStep(session, expectedSteps);
+transition(session, targetStep);
 ```
 
 or use the Waniwani graph itself as the primary order authority.
@@ -559,7 +560,7 @@ or use the Waniwani graph itself as the primary order authority.
 Direct uncontrolled assignments such as:
 
 ```ts
-session.step = 'AWAITING_CONSENT'
+session.step = "AWAITING_CONSENT";
 ```
 
 should not be scattered through business methods.
@@ -683,8 +684,8 @@ Implement:
 ```ts
 replayHistoricalQuote({
   quoteId,
-  originalRuleVersion
-})
+  originalRuleVersion,
+});
 ```
 
 using the rule version recorded in the immutable historical quote.
@@ -1345,6 +1346,7 @@ NOT CLAIMED
 Example:
 
 ### Implemented & tested
+
 - Waniwani typed funnel;
 - deterministic quoting;
 - Postgres persistence;
@@ -1353,12 +1355,14 @@ Example:
 - Docker local topology.
 
 ### Reference architecture
+
 - hosted SaaS;
 - customer VPC;
 - enterprise IAM;
 - production observability integration.
 
 ### Not claimed
+
 - insurer production use;
 - actuarial validity;
 - legal compliance certification;
@@ -1389,13 +1393,13 @@ docs/CLAIMS_EVIDENCE_MATRIX.md
 
 Example:
 
-| Claim | Implementation | Test | CI Artifact | Status | Limitation |
-|---|---|---|---|---|---|
-| Waniwani one-tool typed funnel | `apps/mcp-server/src/waniwani-flow.ts` | `tests/protocol/waniwani-flow.test.ts` | protocol-test job | VERIFIED | local stdio + local HTTP |
-| Durable session persistence | `PostgresSessionStore` | restart integration test | integration-postgres | VERIFIED | single-region demo |
-| Tamper-evident audit | `PostgresAuditRepository` | restart + corruption test | integration-postgres | VERIFIED | not external immutable ledger |
-| Explicit consent gate | flow node + policy | boundary test | protocol-test | VERIFIED | demo product invariant, not generic GDPR assertion |
-| Hosted Waniwani analytics | optional wrapper | none | none | NOT_MEASURED | requires account/key |
+| Claim                          | Implementation                         | Test                                   | CI Artifact          | Status       | Limitation                                         |
+| ------------------------------ | -------------------------------------- | -------------------------------------- | -------------------- | ------------ | -------------------------------------------------- |
+| Waniwani one-tool typed funnel | `apps/mcp-server/src/waniwani-flow.ts` | `tests/protocol/waniwani-flow.test.ts` | protocol-test job    | VERIFIED     | local stdio + local HTTP                           |
+| Durable session persistence    | `PostgresSessionStore`                 | restart integration test               | integration-postgres | VERIFIED     | single-region demo                                 |
+| Tamper-evident audit           | `PostgresAuditRepository`              | restart + corruption test              | integration-postgres | VERIFIED     | not external immutable ledger                      |
+| Explicit consent gate          | flow node + policy                     | boundary test                          | protocol-test        | VERIFIED     | demo product invariant, not generic GDPR assertion |
+| Hosted Waniwani analytics      | optional wrapper                       | none                                   | none                 | NOT_MEASURED | requires account/key                               |
 
 Automate basic validation where practical.
 
@@ -1730,40 +1734,40 @@ Do not create files merely to inflate repository size.
 
 The release is blocked unless these pass.
 
-| ID | Test | Required |
-|---|---|---:|
-| A01 | real Waniwani `createFlow`-style typed flow is used | YES |
-| A02 | primary funnel is registered as one MCP tool | YES |
-| A03 | interrupt/resume tested via real MCP client | YES |
-| A04 | state order cannot be bypassed | YES |
-| A05 | confirmation required before consent/quote | YES |
-| A06 | client cannot choose new-quote rule version | YES |
-| A07 | client cannot inject premium/eligibility/status | YES |
-| A08 | quote calculation idempotent under retries | YES |
-| A09 | correction schema strict and validated | YES |
-| A10 | critical correction invalidates correct downstream state | YES |
-| A11 | Postgres adapter executes real SQL | YES |
-| A12 | session survives store/service recreation | YES |
-| A13 | audit survives restart | YES |
-| A14 | audit chain verifies after restart | YES |
-| A15 | anonymization utility changes actual persistent record | YES |
-| A16 | Docker MCP service serves its advertised transport | YES |
-| A17 | Docker Postgres is actually used | YES |
-| A18 | pricing service topology is truthful | YES |
-| A19 | actual protocol E2E test exists | YES |
-| A20 | `make test-e2e` works | YES |
-| A21 | `npm ci` clean checkout works | YES |
-| A22 | CI uses real lint + formatting check | YES |
-| A23 | CI runs PostgreSQL integration | YES |
-| A24 | CI runs Docker smoke | YES |
-| A25 | zero `file:///Users/` links | YES |
-| A26 | README compliance wording is non-categorical | YES |
-| A27 | CLAIMS_EVIDENCE_MATRIX exists | YES |
-| A28 | RTM statuses match actual proof | YES |
-| A29 | current 24-case eval labeled functional, not production performance | YES |
-| A30 | no secrets committed | YES |
-| A31 | no unsupported Waniwani platform telemetry claim | YES |
-| A32 | clean release report distinguishes PASS/FAIL/NOT_EXECUTED | YES |
+| ID  | Test                                                                | Required |
+| --- | ------------------------------------------------------------------- | -------: |
+| A01 | real Waniwani `createFlow`-style typed flow is used                 |      YES |
+| A02 | primary funnel is registered as one MCP tool                        |      YES |
+| A03 | interrupt/resume tested via real MCP client                         |      YES |
+| A04 | state order cannot be bypassed                                      |      YES |
+| A05 | confirmation required before consent/quote                          |      YES |
+| A06 | client cannot choose new-quote rule version                         |      YES |
+| A07 | client cannot inject premium/eligibility/status                     |      YES |
+| A08 | quote calculation idempotent under retries                          |      YES |
+| A09 | correction schema strict and validated                              |      YES |
+| A10 | critical correction invalidates correct downstream state            |      YES |
+| A11 | Postgres adapter executes real SQL                                  |      YES |
+| A12 | session survives store/service recreation                           |      YES |
+| A13 | audit survives restart                                              |      YES |
+| A14 | audit chain verifies after restart                                  |      YES |
+| A15 | anonymization utility changes actual persistent record              |      YES |
+| A16 | Docker MCP service serves its advertised transport                  |      YES |
+| A17 | Docker Postgres is actually used                                    |      YES |
+| A18 | pricing service topology is truthful                                |      YES |
+| A19 | actual protocol E2E test exists                                     |      YES |
+| A20 | `make test-e2e` works                                               |      YES |
+| A21 | `npm ci` clean checkout works                                       |      YES |
+| A22 | CI uses real lint + formatting check                                |      YES |
+| A23 | CI runs PostgreSQL integration                                      |      YES |
+| A24 | CI runs Docker smoke                                                |      YES |
+| A25 | zero `file:///Users/` links                                         |      YES |
+| A26 | README compliance wording is non-categorical                        |      YES |
+| A27 | CLAIMS_EVIDENCE_MATRIX exists                                       |      YES |
+| A28 | RTM statuses match actual proof                                     |      YES |
+| A29 | current 24-case eval labeled functional, not production performance |      YES |
+| A30 | no secrets committed                                                |      YES |
+| A31 | no unsupported Waniwani platform telemetry claim                    |      YES |
+| A32 | clean release report distinguishes PASS/FAIL/NOT_EXECUTED           |      YES |
 
 ---
 
@@ -1864,14 +1868,18 @@ make integration-down
 A 5-minute interview demo should show:
 
 ## Minute 0–1
+
 Architecture:
+
 - one Waniwani MCP flow;
 - deterministic server core;
 - Postgres;
 - audit.
 
 ## Minute 1–3
+
 Happy path:
+
 - start quote;
 - interrupt/resume;
 - invalid postcode re-ask;
@@ -1882,14 +1890,18 @@ Happy path:
 - quote.
 
 ## Minute 3–4
+
 Adversarial path:
+
 - try premium override;
 - try cheaper rule version;
 - try quote before confirmation;
 - show rejection.
 
 ## Minute 4–5
+
 Enterprise proof:
+
 - audit chain;
 - restart persistence;
 - RTM;

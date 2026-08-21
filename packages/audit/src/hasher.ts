@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto';
-import type { AuditEventType, AuditActor } from '@northstar/domain';
+import { createHash } from "node:crypto";
+import type { AuditEventType, AuditActor } from "@northstar/domain";
 
 export function calculateEventHash(
   previousHash: string,
@@ -10,7 +10,7 @@ export function calculateEventHash(
   eventType: AuditEventType,
   actor: AuditActor,
   ruleVersion: string | undefined,
-  metadata: Record<string, unknown>
+  metadata: Record<string, unknown>,
 ): string {
   const payload = JSON.stringify({
     previousHash,
@@ -21,8 +21,8 @@ export function calculateEventHash(
     eventType,
     actor,
     ruleVersion,
-    metadata
+    metadata,
   });
 
-  return createHash('sha256').update(payload).digest('hex');
+  return createHash("sha256").update(payload).digest("hex");
 }

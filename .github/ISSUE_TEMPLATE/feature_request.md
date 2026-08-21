@@ -3,7 +3,7 @@ name: Feature Request
 about: Suggest an idea or enhancement for the Northstar MCP Kit
 title: "[FEATURE] "
 labels: enhancement
-assignees: ''
+assignees: ""
 ---
 
 **Is your feature request related to a problem? Please describe.**

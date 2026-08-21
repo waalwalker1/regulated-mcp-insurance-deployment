@@ -4,21 +4,21 @@ import type {
   EligibilityResult,
   PricingBreakdown,
   IndicativeQuote,
-  ConsentDeclaration
-} from './schemas.js';
+  ConsentDeclaration,
+} from "./schemas.js";
 
 export type FunnelStep =
-  | 'INIT'
-  | 'COLLECTING_PROPERTY'
-  | 'COLLECTING_RISK'
-  | 'EVALUATING_ELIGIBILITY'
-  | 'COLLECTING_COVERAGE'
-  | 'AWAITING_CONFIRMATION'
-  | 'AWAITING_CONSENT'
-  | 'READY_TO_QUOTE'
-  | 'QUOTED'
-  | 'REFERRED'
-  | 'COMPLETED';
+  | "INIT"
+  | "COLLECTING_PROPERTY"
+  | "COLLECTING_RISK"
+  | "EVALUATING_ELIGIBILITY"
+  | "COLLECTING_COVERAGE"
+  | "AWAITING_CONFIRMATION"
+  | "AWAITING_CONSENT"
+  | "READY_TO_QUOTE"
+  | "QUOTED"
+  | "REFERRED"
+  | "COMPLETED";
 
 export interface FunnelSession {
   sessionId: string;
@@ -42,22 +42,22 @@ export interface FunnelSession {
 }
 
 export type AuditEventType =
-  | 'session.started'
-  | 'field.received'
-  | 'eligibility.evaluated'
-  | 'parameters.confirmed'
-  | 'consent.granted'
-  | 'quote.calculated'
-  | 'quote.adjusted'
-  | 'quote.presented'
-  | 'field.corrected'
-  | 'request.replayed'
-  | 'session.completed'
-  | 'session.anonymized'
-  | 'security.tampering_blocked'
-  | 'system.error';
+  | "session.started"
+  | "field.received"
+  | "eligibility.evaluated"
+  | "parameters.confirmed"
+  | "consent.granted"
+  | "quote.calculated"
+  | "quote.adjusted"
+  | "quote.presented"
+  | "field.corrected"
+  | "request.replayed"
+  | "session.completed"
+  | "session.anonymized"
+  | "security.tampering_blocked"
+  | "system.error";
 
-export type AuditActor = 'user' | 'assistant' | 'server' | 'admin-demo';
+export type AuditActor = "user" | "assistant" | "server" | "admin-demo";
 
 export interface AuditEvent {
   eventId: string;

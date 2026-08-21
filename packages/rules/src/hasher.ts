@@ -1,22 +1,26 @@
-import { createHash } from 'node:crypto';
-import type { QuoteInput, PricingBreakdown, EligibilityResult } from '@northstar/domain';
+import { createHash } from "node:crypto";
+import type {
+  QuoteInput,
+  PricingBreakdown,
+  EligibilityResult,
+} from "@northstar/domain";
 
 /**
  * Deterministically sort and serialize object keys to produce stable JSON
  */
 export function canonicalJsonStringify(obj: unknown): string {
-  if (obj === null || typeof obj !== 'object') {
+  if (obj === null || typeof obj !== "object") {
     return JSON.stringify(obj);
   }
   if (Array.isArray(obj)) {
-    return '[' + obj.map(canonicalJsonStringify).join(',') + ']';
+    return "[" + obj.map(canonicalJsonStringify).join(",") + "]";
   }
   const keys = Object.keys(obj as Record<string, unknown>).sort();
   const pairs = keys.map((key) => {
     const val = (obj as Record<string, unknown>)[key];
-    return JSON.stringify(key) + ':' + canonicalJsonStringify(val);
+    return JSON.stringify(key) + ":" + canonicalJsonStringify(val);
   });
-  return '{' + pairs.join(',') + '}';
+  return "{" + pairs.join(",") + "}";
 }
 
 /**
@@ -47,9 +51,9 @@ export function computeCanonicalQuoteFingerprint(params: {
     totalAnnualPremium: params.pricing.totalAnnualPremium,
     taxRatePercent: params.pricing.taxRatePercent,
     fictionalTaxAmount: params.pricing.fictionalTaxAmount,
-    quoteSemantics: 'indicative_non_binding_v1'
+    quoteSemantics: "indicative_non_binding_v1",
   };
 
   const serialized = canonicalJsonStringify(canonicalPayload);
-  return createHash('sha256').update(serialized).digest('hex');
+  return createHash("sha256").update(serialized).digest("hex");
 }

@@ -1,6 +1,6 @@
 {
   "benchmarkDate": "2026-08-21",
-  "timestamp": "2026-08-21T13:29:06.101Z",
+  "timestamp": "2026-08-21T15:24:02.539Z",
   "totalScenarios": 24,
   "passedScenarios": 24,
   "failedScenarios": 0,
@@ -14,7 +14,7 @@
       "passed": true,
       "expected": "€161.66 annual premium, active status",
       "actual": "€161.66 annual premium, active status",
-      "latencyMs": 4
+      "latencyMs": 3
     },
     {
       "id": "SCN-002",
@@ -23,7 +23,7 @@
       "passed": true,
       "expected": "Calculated Spain premium with 14% tax",
       "actual": "€267.9 with 14.000000000000002% tax",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-003",
@@ -50,7 +50,7 @@
       "passed": true,
       "expected": "Italian 21% tax rate and villa 1.6x multiplier",
       "actual": "€432.33 (21% tax, x1.6 property multiplier)",
-      "latencyMs": 0
+      "latencyMs": 1
     },
     {
       "id": "SCN-006",
@@ -59,7 +59,7 @@
       "passed": true,
       "expected": "REFERRED step with CLAIMS_THRESHOLD_EXCEEDED reason code",
       "actual": "Step REFERRED, reason: CLAIMS_THRESHOLD_EXCEEDED",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-007",
@@ -95,7 +95,7 @@
       "passed": true,
       "expected": "Active quote invalidated, step reverted to COLLECTING_PROPERTY, correction count incremented",
       "actual": "Active quote: undefined, Step: COLLECTING_PROPERTY, Corrections: 1",
-      "latencyMs": 0
+      "latencyMs": 1
     },
     {
       "id": "SCN-011",
@@ -122,7 +122,7 @@
       "passed": true,
       "expected": "Unbroken SHA-256 hash sequence verified across all lifecycle events",
       "actual": "Chain Valid: true, Events Verified: 9",
-      "latencyMs": 0
+      "latencyMs": 1
     },
     {
       "id": "SCN-014",
@@ -131,7 +131,7 @@
       "passed": true,
       "expected": "Complete state segregation between concurrent sessions",
       "actual": "Session A: FR, Session B: DE",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-015",

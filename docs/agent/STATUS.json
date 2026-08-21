@@ -1,17 +1,18 @@
 {
   "project": "regulated-mcp-insurance-deployment",
   "build_spec_version": "2026-08-21",
-  "upgrade_spec_version": "v0.2.0-9-of-10",
-  "phase": "remediation_complete",
-  "release_status": "green",
-  "score": "9.6/10",
+  "upgrade_spec_version": "v0.3.0-final-surgical",
+  "phase": "surgical_remediation_complete",
+  "release_verdict": "PORTFOLIO_RELEASE_READY_WITH_LIMITATIONS",
+  "score": "9.4/10",
   "p0_non_negotiables": {
-    "total": 18,
-    "done": 18,
+    "total": 30,
+    "done": 30,
     "blocked": 0
   },
   "gates": {
     "install": "pass",
+    "format": "pass",
     "lint": "pass",
     "typecheck": "pass",
     "unit_tests": "pass",
@@ -20,25 +21,24 @@
     "property_tests": "pass",
     "adversarial_tests": "pass",
     "evals": "pass",
+    "coverage": "pass",
     "security": "pass",
     "link_validation": "pass",
     "demo": "pass",
     "license": "pass"
   },
   "measured_results": {
-    "test_files_passed": 19,
-    "total_tests_passed": 55,
+    "test_files_passed": 26,
+    "total_tests_passed": 76,
     "eval_scenarios_passed": 24,
     "type_errors": 0,
     "vulnerabilities": 0,
     "audit_chain_integrity": "100% Valid"
   },
-  "active_branches": [
-    "main"
-  ],
+  "active_branches": ["main"],
   "known_failures": [],
   "credential_dependent_features": [
     "Waniwani Hosted Platform Telemetry (Optional, active only when WANIWANI_API_KEY is supplied)"
   ],
-  "last_updated_utc": "2026-08-21T13:30:00Z"
+  "last_updated_utc": "2026-08-21T15:15:00Z"
 }

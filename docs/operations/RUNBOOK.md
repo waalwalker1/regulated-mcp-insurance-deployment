@@ -28,11 +28,13 @@ npm run lint
 ## 2. PostgreSQL Setup & Database Migrations
 
 ### Using Docker Compose
+
 ```bash
 docker-compose up -d postgres
 ```
 
 ### Running Schema Migrations
+
 ```bash
 export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/northstar_insurance"
 npm run db:migrate
@@ -51,6 +53,7 @@ npm run audit:verify -- <sessionId>
 ```
 
 Sample output:
+
 ```text
 [Audit Verify] Verifying SHA-256 hash chain for session: 7151315a-0f0f-462d-b26c-0f3df75aae2c
 [Audit Verify] Found 10 audit events for session.

@@ -1,33 +1,42 @@
-import { randomUUID } from 'node:crypto';
-import type { QuoteInput, GeneratedQuote, FunnelSession } from '@northstar/domain';
-import { DomainError, FunnelStateMachine } from '@northstar/domain';
-import { getRuleSet } from './registry.js';
-import { evaluateEligibility } from './eligibility.js';
-import { calculatePricing } from './pricing.js';
-import { computeCanonicalQuoteFingerprint } from './hasher.js';
-import { defaultRulePolicyProvider, type RulePolicyProvider } from './rule-policy.js';
+import { randomUUID } from "node:crypto";
+import type {
+  QuoteInput,
+  GeneratedQuote,
+  FunnelSession,
+} from "@northstar/domain";
+import { DomainError, FunnelStateMachine } from "@northstar/domain";
+import { getRuleSet } from "./registry.js";
+import { evaluateEligibility } from "./eligibility.js";
+import { calculatePricing } from "./pricing.js";
+import { computeCanonicalQuoteFingerprint } from "./hasher.js";
+import {
+  defaultRulePolicyProvider,
+  type RulePolicyProvider,
+} from "./rule-policy.js";
 
 export function generateQuote(
   session: FunnelSession,
   input: QuoteInput,
-  rulePolicy: RulePolicyProvider = defaultRulePolicyProvider
+  rulePolicy: RulePolicyProvider = defaultRulePolicyProvider,
 ): GeneratedQuote {
   // Invariant 1: Ensure state machine prerequisites are met
   FunnelStateMachine.assertReadyToQuote(session);
 
   // Invariant 2: Active rule version is strictly server-owned
-  const activeRuleVersion = rulePolicy.getActiveRuleVersion({ country: input.country });
+  const activeRuleVersion = rulePolicy.getActiveRuleVersion({
+    country: input.country,
+  });
   const ruleSet = getRuleSet(activeRuleVersion);
 
   const eligibility = evaluateEligibility(input, ruleSet);
 
   if (!eligibility.isEligible) {
-    session.step = 'REFERRED';
+    session.step = "REFERRED";
     session.eligibilityResult = eligibility;
     throw new DomainError(
-      'INELIGIBLE_RISK',
+      "INELIGIBLE_RISK",
       `Quote cannot be generated automatically: ${eligibility.explanation}`,
-      { eligibility }
+      { eligibility },
     );
   }
 
@@ -36,7 +45,7 @@ export function generateQuote(
     ruleVersion: ruleSet.version,
     input,
     pricing,
-    eligibility
+    eligibility,
   });
 
   const now = new Date();
@@ -54,13 +63,13 @@ export function generateQuote(
     pricing,
     mandatoryDisclosure: ruleSet.mandatoryDisclosure,
     isBinding: false,
-    status: 'active'
+    status: "active",
   };
 
   session.activeQuote = quote;
   session.eligibilityResult = eligibility;
   session.lastQuoteFingerprint = quoteHash;
-  session.step = 'QUOTED';
+  session.step = "QUOTED";
   session.version = (session.version ?? 0) + 1;
   session.updatedAt = now.toISOString();
 

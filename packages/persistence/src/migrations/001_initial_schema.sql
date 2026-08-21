@@ -62,5 +62,15 @@ CREATE TABLE IF NOT EXISTS idempotency_records (
 
 CREATE INDEX IF NOT EXISTS idx_idempotency_expires_at ON idempotency_records(expires_at);
 
+CREATE TABLE IF NOT EXISTS waniwani_flow_state (
+  flow_key TEXT PRIMARY KEY,
+  value JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  expires_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_waniwani_flow_state_expires ON waniwani_flow_state(expires_at);
+
 INSERT INTO schema_migrations (version) VALUES ('001_initial_schema')
 ON CONFLICT (version) DO NOTHING;

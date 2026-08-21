@@ -6,6 +6,7 @@ description: Packages a polished open-source repository with reproducible quicks
 # Github Release
 
 Before release:
+
 - run full CI-equivalent locally;
 - ensure `git status` is understood;
 - remove secrets/temp artifacts;

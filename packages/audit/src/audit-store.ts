@@ -1,12 +1,12 @@
-import { randomUUID } from 'node:crypto';
-import type { AuditEvent, AuditEventType } from '@northstar/domain';
-import { redactMetadata } from './redactor.js';
-import { calculateEventHash } from './hasher.js';
-import type { AuditRepository } from './audit-repository.js';
-import { MemoryAuditRepository } from './memory-audit-repository.js';
-import { PostgresAuditRepository } from './postgres-audit-repository.js';
+import { randomUUID } from "node:crypto";
+import type { AuditEvent, AuditEventType } from "@northstar/domain";
+import { redactMetadata } from "./redactor.js";
+import { calculateEventHash } from "./hasher.js";
+import type { AuditRepository } from "./audit-repository.js";
+import { MemoryAuditRepository } from "./memory-audit-repository.js";
+import { PostgresAuditRepository } from "./postgres-audit-repository.js";
 
-export const GENESIS_HASH = '0'.repeat(64);
+export const GENESIS_HASH = "0".repeat(64);
 
 export class AuditStore {
   private readonly repository: AuditRepository;
@@ -14,7 +14,10 @@ export class AuditStore {
   constructor(repository?: AuditRepository) {
     if (repository) {
       this.repository = repository;
-    } else if (process.env.PERSISTENCE_MODE === 'postgres' && process.env.DATABASE_URL) {
+    } else if (
+      process.env.PERSISTENCE_MODE === "postgres" &&
+      process.env.DATABASE_URL
+    ) {
       this.repository = new PostgresAuditRepository(process.env.DATABASE_URL);
     } else {
       this.repository = new MemoryAuditRepository();
@@ -28,7 +31,7 @@ export class AuditStore {
     sessionId: string;
     correlationId: string;
     eventType: AuditEventType;
-    actor: 'user' | 'assistant' | 'server' | 'admin-demo';
+    actor: "user" | "assistant" | "server" | "admin-demo";
     ruleVersion?: string;
     metadata?: Record<string, unknown>;
   }): Promise<AuditEvent> {
@@ -47,7 +50,7 @@ export class AuditStore {
       params.eventType,
       params.actor,
       params.ruleVersion,
-      sanitizedMetadata
+      sanitizedMetadata,
     );
 
     const event: AuditEvent = {
@@ -60,7 +63,7 @@ export class AuditStore {
       ruleVersion: params.ruleVersion,
       metadata: sanitizedMetadata,
       previousHash,
-      currentHash
+      currentHash,
     };
 
     await this.repository.append(event);
@@ -104,7 +107,7 @@ export class AuditStore {
         return {
           isValid: false,
           eventCount: sessionEvents.length,
-          failedAtEventId: event.eventId
+          failedAtEventId: event.eventId,
         };
       }
 
@@ -117,14 +120,14 @@ export class AuditStore {
         event.eventType,
         event.actor,
         event.ruleVersion,
-        event.metadata || {}
+        event.metadata || {},
       );
 
       if (calculatedCurrentHash !== event.currentHash) {
         return {
           isValid: false,
           eventCount: sessionEvents.length,
-          failedAtEventId: event.eventId
+          failedAtEventId: event.eventId,
         };
       }
 

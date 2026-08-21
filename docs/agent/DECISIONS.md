@@ -1,10 +1,11 @@
 # Architecture Decision Records (ADRs)
 
 ## ADR-001 — Monorepo Architecture with Strict TypeScript
+
 - **Date:** 2026-08-21
 - **Status:** Accepted
 - **Context:** Need clean separation between the domain logic, deterministic rules, state persistence, audit trail, and MCP server application.
-- **Options Considered:** 
+- **Options Considered:**
   1. Monolithic single-package application.
   2. Polyrepo.
   3. TypeScript monorepo with dedicated domain, rules, audit, persistence, and mcp-server packages/apps.
@@ -16,6 +17,7 @@
 ---
 
 ## ADR-002 — Deterministic Server Authority over Quote Progression and Pricing
+
 - **Date:** 2026-08-21
 - **Status:** Accepted
 - **Context:** AI models in regulated domains can hallucinate prices, eligibility criteria, or consent states.
@@ -31,6 +33,7 @@
 ---
 
 ## ADR-003 — Dual-Mode Persistence (Local In-Memory / Dockerized PostgreSQL)
+
 - **Date:** 2026-08-21
 - **Status:** Accepted
 - **Context:** Must provide a zero-credential, zero-dependency instant local path for interview reviewers while demonstrating enterprise-grade durable storage.
@@ -46,6 +49,7 @@
 ---
 
 ## ADR-004 — Append-Only Application Audit Trail with SHA-256 Hash Chaining
+
 - **Date:** 2026-08-21
 - **Status:** Accepted
 - **Context:** Need verifiable evidence of every state transition, validation rejection, consent grant, and calculation step.
@@ -61,6 +65,7 @@
 ---
 
 ## ADR-005 — Rule Versioning with Deterministic Replay Guarantee
+
 - **Date:** 2026-08-21
 - **Status:** Accepted
 - **Context:** Insurance pricing and eligibility rules change over time. Historical quotes must remain reproducible even when new rule versions are published.

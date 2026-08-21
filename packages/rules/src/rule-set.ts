@@ -5,8 +5,8 @@ import type {
   FloorAreaBand,
   ConstructionYearBand,
   CoverageTier,
-  DeductibleOption
-} from '@northstar/domain';
+  DeductibleOption,
+} from "@northstar/domain";
 
 export interface InsuranceRuleSet {
   version: string;

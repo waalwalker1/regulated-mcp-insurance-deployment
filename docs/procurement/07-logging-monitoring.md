@@ -1,7 +1,9 @@
 # Logging, Monitoring, and Telemetry
 
 ## 1. Structured JSON Logging Format
+
 All system logs output structured JSON with standard correlation fields:
+
 ```json
 {
   "timestamp": "2026-08-21T12:00:00.000Z",
@@ -21,7 +23,9 @@ All system logs output structured JSON with standard correlation fields:
 ---
 
 ## 2. Health & Prometheus-Compatible Metrics
+
 The Pricing microservice exposes real-time operational telemetry at `http://localhost:3001/metrics`:
+
 - `totalEvaluations`: Total underwriting eligibility evaluation requests.
 - `totalCalculations`: Total quote calculation invocations.
 - `totalRejections`: Total schema validation or consent rejections.

@@ -1,7 +1,11 @@
-import { randomUUID } from 'node:crypto';
-import pg from 'pg';
-import type { FunnelSession, IndicativeQuote } from '@northstar/domain';
-import type { SessionStore, IdempotencyRecord } from './store.interface.js';
+import { randomUUID } from "node:crypto";
+import pg from "pg";
+import {
+  DomainError,
+  type FunnelSession,
+  type IndicativeQuote,
+} from "@northstar/domain";
+import type { SessionStore, IdempotencyRecord } from "./store.interface.js";
 
 const { Pool } = pg;
 
@@ -10,13 +14,14 @@ export class PostgresSessionStore implements SessionStore {
   private isInitialized = false;
 
   constructor(
-    private readonly connectionString: string = process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/northstar_insurance',
-    private readonly defaultTtlSeconds: number = 3600
+    private readonly connectionString: string = process.env.DATABASE_URL ??
+      "postgresql://postgres:postgres@localhost:5432/northstar_insurance",
+    private readonly defaultTtlSeconds: number = 3600,
   ) {
     this.pool = new Pool({
       connectionString: this.connectionString,
       connectionTimeoutMillis: 5000,
-      idleTimeoutMillis: 10000
+      idleTimeoutMillis: 10000,
     });
   }
 
@@ -86,6 +91,16 @@ export class PostgresSessionStore implements SessionStore {
         );
 
         CREATE INDEX IF NOT EXISTS idx_idempotency_expires_at ON idempotency_records(expires_at);
+
+        CREATE TABLE IF NOT EXISTS waniwani_flow_state (
+          flow_key TEXT PRIMARY KEY,
+          value JSONB NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          expires_at TIMESTAMPTZ
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_waniwani_flow_state_expires ON waniwani_flow_state(expires_at);
       `);
       this.isInitialized = true;
     } finally {
@@ -96,7 +111,7 @@ export class PostgresSessionStore implements SessionStore {
   async createSession(
     sessionId: string = randomUUID(),
     correlationId: string = randomUUID(),
-    ttlSeconds: number = this.defaultTtlSeconds
+    ttlSeconds: number = this.defaultTtlSeconds,
   ): Promise<FunnelSession> {
     await this.initialize();
     const now = new Date();
@@ -106,36 +121,78 @@ export class PostgresSessionStore implements SessionStore {
     const session: FunnelSession = {
       sessionId,
       correlationId,
-      step: 'INIT',
+      step: "INIT",
       partialInput: {},
       historicalQuotes: [],
       correctionCount: 0,
       version: 1,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
-      expiresAt
+      expiresAt,
     };
 
-    await this.saveSession(session);
+    const payload = JSON.stringify(session);
+    await this.pool.query(
+      `INSERT INTO quote_sessions (session_id, correlation_id, step, payload, version, created_at, updated_at, expires_at)
+       VALUES ($1, $2, $3, $4, 1, NOW(), NOW(), $5)
+       ON CONFLICT (session_id) DO NOTHING`,
+      [sessionId, correlationId, session.step, payload, expiresAt],
+    );
+
     return session;
   }
 
+  /**
+   * Save session using compare-and-swap Optimistic Concurrency Control
+   */
   async saveSession(session: FunnelSession): Promise<void> {
     await this.initialize();
-    const expiresAt = session.expiresAt || new Date(Date.now() + this.defaultTtlSeconds * 1000).toISOString();
+    const expiresAt =
+      session.expiresAt ||
+      new Date(Date.now() + this.defaultTtlSeconds * 1000).toISOString();
     const payload = JSON.stringify(session);
+    const expectedVersion = session.version ?? 1;
 
-    await this.pool.query(
-      `INSERT INTO quote_sessions (session_id, correlation_id, step, payload, version, updated_at, expires_at)
-       VALUES ($1, $2, $3, $4, $5, NOW(), $6)
-       ON CONFLICT (session_id) DO UPDATE SET
-         step = EXCLUDED.step,
-         payload = EXCLUDED.payload,
-         version = quote_sessions.version + 1,
-         updated_at = NOW(),
-         expires_at = EXCLUDED.expires_at`,
-      [session.sessionId, session.correlationId, session.step, payload, session.version ?? 1, expiresAt]
+    // Check if session exists
+    const checkRes = await this.pool.query(
+      `SELECT version FROM quote_sessions WHERE session_id = $1`,
+      [session.sessionId],
     );
+
+    if (checkRes.rows.length === 0) {
+      // New insert
+      await this.pool.query(
+        `INSERT INTO quote_sessions (session_id, correlation_id, step, payload, version, created_at, updated_at, expires_at)
+         VALUES ($1, $2, $3, $4, 1, NOW(), NOW(), $5)`,
+        [
+          session.sessionId,
+          session.correlationId,
+          session.step,
+          payload,
+          expiresAt,
+        ],
+      );
+      session.version = 1;
+      return;
+    }
+
+    // Atomic compare-and-swap update
+    const updateRes = await this.pool.query(
+      `UPDATE quote_sessions
+       SET step = $1, payload = $2, version = version + 1, updated_at = NOW(), expires_at = $3
+       WHERE session_id = $4 AND version = $5
+       RETURNING version`,
+      [session.step, payload, expiresAt, session.sessionId, expectedVersion],
+    );
+
+    if ((updateRes.rowCount ?? 0) === 0) {
+      throw new DomainError(
+        "CONCURRENT_MODIFICATION",
+        `Session '${session.sessionId}' was concurrently modified by another process. Expected version ${expectedVersion}.`,
+      );
+    }
+
+    session.version = updateRes.rows[0].version;
   }
 
   async getSession(sessionId: string): Promise<FunnelSession | null> {
@@ -143,7 +200,7 @@ export class PostgresSessionStore implements SessionStore {
     const result = await this.pool.query(
       `SELECT payload, expires_at FROM quote_sessions
        WHERE session_id = $1 AND expires_at > NOW()`,
-      [sessionId]
+      [sessionId],
     );
 
     if (result.rows.length === 0) return null;
@@ -154,10 +211,51 @@ export class PostgresSessionStore implements SessionStore {
     await this.initialize();
     const result = await this.pool.query(
       `DELETE FROM quote_sessions WHERE session_id = $1`,
-      [sessionId]
+      [sessionId],
     );
-    await this.pool.query(`DELETE FROM quote_history WHERE session_id = $1`, [sessionId]);
+    await this.pool.query(`DELETE FROM quote_history WHERE session_id = $1`, [
+      sessionId,
+    ]);
     return (result.rowCount ?? 0) > 0;
+  }
+
+  /**
+   * Scrub personal contact data across sessions and historical quote snapshots
+   */
+  async anonymizeSession(sessionId: string): Promise<boolean> {
+    await this.initialize();
+    const session = await this.getSession(sessionId);
+    if (!session) return false;
+
+    // Scrub session payload
+    delete session.partialInput.contactEmail;
+    if (session.validatedInput) {
+      delete session.validatedInput.contactEmail;
+    }
+    if (session.activeQuote?.input) {
+      delete session.activeQuote.input.contactEmail;
+    }
+    for (const h of session.historicalQuotes) {
+      if (h.input) delete h.input.contactEmail;
+    }
+
+    session.updatedAt = new Date().toISOString();
+    const payload = JSON.stringify(session);
+
+    await this.pool.query(
+      `UPDATE quote_sessions SET payload = $1, updated_at = NOW() WHERE session_id = $2`,
+      [payload, sessionId],
+    );
+
+    // Scrub quote_history table snapshots
+    await this.pool.query(
+      `UPDATE quote_history
+       SET input_snapshot = input_snapshot - 'contactEmail'
+       WHERE session_id = $1`,
+      [sessionId],
+    );
+
+    return true;
   }
 
   async saveQuote(quote: IndicativeQuote): Promise<void> {
@@ -175,8 +273,8 @@ export class PostgresSessionStore implements SessionStore {
         JSON.stringify(quote.pricing),
         quote.quoteHash,
         quote.status,
-        quote.expiresAt
-      ]
+        quote.expiresAt,
+      ],
     );
   }
 
@@ -185,7 +283,7 @@ export class PostgresSessionStore implements SessionStore {
     const result = await this.pool.query(
       `SELECT quote_id, session_id, rule_version, input_snapshot, eligibility_snapshot, pricing_snapshot, quote_hash, status, created_at, expires_at
        FROM quote_history WHERE session_id = $1 ORDER BY created_at ASC`,
-      [sessionId]
+      [sessionId],
     );
 
     return result.rows.map((row) => ({
@@ -196,11 +294,11 @@ export class PostgresSessionStore implements SessionStore {
       eligibility: row.eligibility_snapshot,
       pricing: row.pricing_snapshot,
       quoteHash: row.quote_hash,
-      mandatoryDisclosure: 'Indicative non-binding quotation.',
+      mandatoryDisclosure: "Indicative non-binding quotation.",
       isBinding: false,
       status: row.status,
       createdAt: row.created_at.toISOString(),
-      expiresAt: row.expires_at.toISOString()
+      expiresAt: row.expires_at.toISOString(),
     }));
   }
 
@@ -209,7 +307,7 @@ export class PostgresSessionStore implements SessionStore {
     const result = await this.pool.query(
       `SELECT idempotency_key, session_id, operation, request_fingerprint, response_payload, created_at, expires_at
        FROM idempotency_records WHERE idempotency_key = $1 AND expires_at > NOW()`,
-      [key]
+      [key],
     );
 
     if (result.rows.length === 0) return null;
@@ -221,7 +319,7 @@ export class PostgresSessionStore implements SessionStore {
       requestFingerprint: row.request_fingerprint,
       responsePayload: row.response_payload,
       createdAt: row.created_at.toISOString(),
-      expiresAt: row.expires_at.toISOString()
+      expiresAt: row.expires_at.toISOString(),
     };
   }
 
@@ -230,22 +328,29 @@ export class PostgresSessionStore implements SessionStore {
     await this.pool.query(
       `INSERT INTO idempotency_records (idempotency_key, session_id, operation, request_fingerprint, response_payload, expires_at)
        VALUES ($1, $2, $3, $4, $5, $6)
-       ON CONFLICT (idempotency_key) DO UPDATE SET response_payload = EXCLUDED.response_payload`,
+       ON CONFLICT (idempotency_key) DO NOTHING`,
       [
         record.idempotencyKey,
         record.sessionId,
         record.operation,
         record.requestFingerprint,
         JSON.stringify(record.responsePayload),
-        record.expiresAt
-      ]
+        record.expiresAt,
+      ],
     );
   }
 
   async cleanExpiredSessions(): Promise<number> {
     await this.initialize();
-    const result = await this.pool.query(`DELETE FROM quote_sessions WHERE expires_at < NOW()`);
-    await this.pool.query(`DELETE FROM idempotency_records WHERE expires_at < NOW()`);
+    const result = await this.pool.query(
+      `DELETE FROM quote_sessions WHERE expires_at < NOW()`,
+    );
+    await this.pool.query(
+      `DELETE FROM idempotency_records WHERE expires_at < NOW()`,
+    );
+    await this.pool.query(
+      `DELETE FROM waniwani_flow_state WHERE expires_at < NOW()`,
+    );
     return result.rowCount ?? 0;
   }
 

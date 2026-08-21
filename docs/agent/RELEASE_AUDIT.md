@@ -24,6 +24,7 @@
 ---
 
 ## 2. Release Notes (Proposed Tag: `v0.1.0`)
+
 - Initial release of the Northstar Regulated MCP Insurance Deployment Kit.
 - Complete implementation of deterministic Model Context Protocol (MCP) quoting funnel for European home insurance.
 - Zero-credential local demonstration runner with Fastify pricing microservice and Docker Compose stack.

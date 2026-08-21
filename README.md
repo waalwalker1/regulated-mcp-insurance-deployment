@@ -1,4 +1,5 @@
 # Regulated MCP Insurance Deployment Kit
+
 ### Deterministic Quoting Architecture & Enterprise Delivery Kit for European Insurance
 
 [![CI](https://github.com/waalwalker1/regulated-mcp-insurance-deployment/actions/workflows/ci.yml/badge.svg)](https://github.com/waalwalker1/regulated-mcp-insurance-deployment/actions/workflows/ci.yml)
@@ -17,7 +18,7 @@
 - **SDK & Protocol Integration:** Genuine `@waniwani/sdk/mcp` typed flow (`createFlow`, `StateGraph`, `interrupt`, conditional branching) compiled and registered as **one primary MCP tool** (`get_home_insurance_quote`) on a standard `McpServer`.
 - **Zero-Credential Local Run:** The entire P0 workflow runs 100% locally with zero external API keys or cloud dependencies (`make demo`, `make test`, `make eval`).
 - **Proof-of-Work Evidence:**
-  - **19 Test Files / 55 Vitest Tests (100% passing)** spanning domain, rules, persistence, audit, protocol transports, idempotency, state order, property-based tests (`fast-check`), and adversarial attacks.
+  - **26 Test Files / 76 Vitest Tests (100% passing)** spanning domain, rules, persistence, audit, official Streamable HTTP transport, Waniwani flow state in PostgreSQL, optimistic concurrency control, GDPR history scrubbing, idempotency conflicts, property-based tests (`fast-check`), and adversarial attacks.
   - **24 Automated Evaluation Scenarios (100% passing in 7ms)** across 5 European countries (FR, ES, PT, DE, IT).
   - **Real Persistence & Durable Audit:** Pluggable in-memory TTL store and real PostgreSQL adapter with parameterized SQL, schema migrations, and SHA-256 hash chain verification across restarts.
   - **Enterprise FDE & Procurement Pack:** 32 enterprise artifacts including a 35-question security questionnaire, STRIDE threat model, RTM, RACI, and UAT plans.
@@ -55,6 +56,7 @@ flowchart LR
 ```
 
 ### Core Invariants
+
 1. **Server Pricing Authority:** Premiums are calculated via pure functions in compiled TypeScript ([`packages/rules/src/pricing.ts`](./packages/rules/src/pricing.ts)). LLM output can never directly set or alter premiums, multipliers, taxes, or eligibility outcomes.
 2. **Mandatory Consent Gate:** Quote calculation is hard-blocked until explicit data processing consent is recorded (`[CONSENT_REQUIRED]`).
 3. **Cryptographic Audit Trail:** Every lifecycle event appends a SHA-256 hash chaining back to session genesis ([`packages/audit/src/audit-store.ts`](./packages/audit/src/audit-store.ts)).
@@ -77,10 +79,12 @@ flowchart LR
 ## 3. Quickstart
 
 ### Prerequisites
+
 - Node.js `v20.x` or later
 - npm `v10.x` or later (Docker optional for containerized PostgreSQL)
 
 ### 1-Command Verification
+
 ```bash
 # 1. Install dependencies (idempotent, local)
 make setup
@@ -169,15 +173,15 @@ make release-check
 
 All claims in this repository are backed by passing code and automated evaluation benchmarks:
 
-| Evaluation Dimension | Measurement Tool | Scenarios / Tests | Measured Result |
-|---|---|---|---|
-| **Type Safety** | TypeScript Compiler (`tsc --noEmit`) | Monorepo Strict Mode | **0 Type Errors** |
-| **Unit, Protocol & Integration Suite** | Vitest Test Runner (`npm run test`) | 19 Test Files, 55 Tests | **55 Passed (100%)** |
-| **Evaluation Benchmark** | Automated Evaluation Runner (`npm run eval`) | 24 Multi-Country Scenarios | **24 Passed (100%, 7ms execution)** |
-| **Security Audit** | npm Dependency Audit (`npm run security`) | Production Dependencies | **0 High/Critical Vulnerabilities** |
-| **Audit Chain Integrity** | SHA-256 Cryptographic Verification | Lifecycle Event Logs | **100% Unbroken Hash Chains** |
+| Evaluation Dimension                   | Measurement Tool                             | Scenarios / Tests          | Measured Result                     |
+| -------------------------------------- | -------------------------------------------- | -------------------------- | ----------------------------------- |
+| **Type Safety**                        | TypeScript Compiler (`tsc --noEmit`)         | Monorepo Strict Mode       | **0 Type Errors**                   |
+| **Unit, Protocol & Integration Suite** | Vitest Test Runner (`npm run test`)          | 26 Test Files, 76 Tests    | **76 Passed (100%)**                |
+| **Evaluation Benchmark**               | Automated Evaluation Runner (`npm run eval`) | 24 Multi-Country Scenarios | **24 Passed (100%, 7ms execution)** |
+| **Security Audit**                     | npm Dependency Audit (`npm run security`)    | Production Dependencies    | **0 High/Critical Vulnerabilities** |
+| **Audit Chain Integrity**              | SHA-256 Cryptographic Verification           | Lifecycle Event Logs       | **100% Unbroken Hash Chains**       |
 
-*Detailed claim verification is maintained in [`docs/CLAIMS_EVIDENCE_MATRIX.md`](./docs/CLAIMS_EVIDENCE_MATRIX.md).*
+_Detailed claim verification is maintained in [`docs/CLAIMS_EVIDENCE_MATRIX.md`](./docs/CLAIMS_EVIDENCE_MATRIX.md)._
 
 ---
 

@@ -1,5 +1,5 @@
-import type { AuditEvent } from '@northstar/domain';
-import type { AuditRepository } from './audit-repository.js';
+import type { AuditEvent } from "@northstar/domain";
+import type { AuditRepository } from "./audit-repository.js";
 
 export class MemoryAuditRepository implements AuditRepository {
   private events: AuditEvent[] = [];

@@ -1,18 +1,24 @@
-import { randomUUID } from 'node:crypto';
-import type { FunnelSession, IndicativeQuote } from '@northstar/domain';
-import type { SessionStore, IdempotencyRecord } from './store.interface.js';
+import { randomUUID } from "node:crypto";
+import type { FunnelSession, IndicativeQuote } from "@northstar/domain";
+import type { SessionStore, IdempotencyRecord } from "./store.interface.js";
 
 export class InMemorySessionStore implements SessionStore {
-  private readonly sessions = new Map<string, { session: FunnelSession; expiresAtEpoch: number }>();
+  private readonly sessions = new Map<
+    string,
+    { session: FunnelSession; expiresAtEpoch: number }
+  >();
   private readonly quotes = new Map<string, IndicativeQuote[]>();
-  private readonly idempotencyRecords = new Map<string, { record: IdempotencyRecord; expiresAtEpoch: number }>();
+  private readonly idempotencyRecords = new Map<
+    string,
+    { record: IdempotencyRecord; expiresAtEpoch: number }
+  >();
 
   constructor(private readonly defaultTtlSeconds: number = 3600) {}
 
   async createSession(
     sessionId: string = randomUUID(),
     correlationId: string = randomUUID(),
-    ttlSeconds: number = this.defaultTtlSeconds
+    ttlSeconds: number = this.defaultTtlSeconds,
   ): Promise<FunnelSession> {
     const now = new Date();
     const expiresAtEpoch = Date.now() + ttlSeconds * 1000;
@@ -21,14 +27,14 @@ export class InMemorySessionStore implements SessionStore {
     const session: FunnelSession = {
       sessionId,
       correlationId,
-      step: 'INIT',
+      step: "INIT",
       partialInput: {},
       historicalQuotes: [],
       correctionCount: 0,
       version: 1,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
-      expiresAt
+      expiresAt,
     };
 
     this.sessions.set(sessionId, { session, expiresAtEpoch });
@@ -64,6 +70,31 @@ export class InMemorySessionStore implements SessionStore {
     return existed;
   }
 
+  async anonymizeSession(sessionId: string): Promise<boolean> {
+    const entry = this.sessions.get(sessionId);
+    if (!entry) return false;
+
+    delete entry.session.partialInput.contactEmail;
+    if (entry.session.validatedInput) {
+      delete entry.session.validatedInput.contactEmail;
+    }
+    if (entry.session.activeQuote?.input) {
+      delete entry.session.activeQuote.input.contactEmail;
+    }
+    for (const h of entry.session.historicalQuotes) {
+      if (h.input) delete h.input.contactEmail;
+    }
+
+    const quotesList = this.quotes.get(sessionId);
+    if (quotesList) {
+      for (const q of quotesList) {
+        if (q.input) delete q.input.contactEmail;
+      }
+    }
+
+    return true;
+  }
+
   async saveQuote(quote: IndicativeQuote): Promise<void> {
     const list = this.quotes.get(quote.sessionId) ?? [];
     list.push(JSON.parse(JSON.stringify(quote)) as IndicativeQuote);
@@ -87,9 +118,14 @@ export class InMemorySessionStore implements SessionStore {
 
   async saveIdempotencyRecord(record: IdempotencyRecord): Promise<void> {
     const expiresAtEpoch = new Date(record.expiresAt).getTime();
+    if (this.idempotencyRecords.has(record.idempotencyKey)) {
+      return; // Do not overwrite existing record
+    }
     this.idempotencyRecords.set(record.idempotencyKey, {
       record: JSON.parse(JSON.stringify(record)) as IdempotencyRecord,
-      expiresAtEpoch: isNaN(expiresAtEpoch) ? Date.now() + 86400 * 1000 : expiresAtEpoch
+      expiresAtEpoch: isNaN(expiresAtEpoch)
+        ? Date.now() + 86400 * 1000
+        : expiresAtEpoch,
     });
   }
 

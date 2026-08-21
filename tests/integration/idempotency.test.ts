@@ -1,80 +1,118 @@
-import { describe, it, expect } from 'vitest';
-import { FunnelEngine } from '../../apps/mcp-server/src/funnel-engine.js';
-import { InMemorySessionStore } from '../../packages/persistence/src/index.js';
-import { AuditStore } from '../../packages/audit/src/index.js';
+import { describe, it, expect } from "vitest";
+import { FunnelEngine } from "../../apps/mcp-server/src/funnel-engine.js";
+import { InMemorySessionStore } from "../../packages/persistence/src/memory-store.js";
+import { AuditStore } from "../../packages/audit/src/audit-store.js";
+import { MemoryAuditRepository } from "../../packages/audit/src/memory-audit-repository.js";
 
-describe('Integration: Idempotency & Request Replay Safety', () => {
-  it('should return identical quote on 10 repeated calculation calls with same idempotency key', async () => {
-    const store = new InMemorySessionStore();
-    const audit = new AuditStore();
-    const engine = new FunnelEngine(store, audit);
-
-    const session = await engine.startSession('corr-idem-1');
+describe("Integration: Idempotency & Replay Invariants", () => {
+  async function createReadySession(engine: FunnelEngine) {
+    const session = await engine.startSession("corr-idem-1");
     await engine.submitPropertyBasics(session.sessionId, {
-      country: 'FR',
-      postcode: '75008',
-      propertyType: 'apartment',
-      occupancyType: 'owner_occupied'
+      country: "FR",
+      postcode: "75008",
+      propertyType: "apartment",
+      occupancyType: "owner_occupied",
     });
     await engine.submitRiskFactors(session.sessionId, {
-      constructionYearBand: '2000_2015',
-      floorAreaBand: '50_100_sqm',
+      constructionYearBand: "2000_2015",
+      floorAreaBand: "50_100_sqm",
       isPrimaryResidence: true,
-      claimsCount5Years: 0
+      claimsCount5Years: 0,
     });
     await engine.evaluateEligibility(session.sessionId);
-    await engine.selectCoverage(session.sessionId, { coverageTier: 'comfort', deductible: 300 });
+    await engine.selectCoverage(session.sessionId, {
+      coverageTier: "comfort",
+      deductible: 300,
+      contactEmail: "idem.test@example.fr",
+    });
     await engine.confirmParameters(session.sessionId, true);
-    await engine.submitConsent(session.sessionId);
+    await engine.submitConsent(session.sessionId, "consent_v1_2026");
+    return session;
+  }
 
-    const idempotencyKey = 'idempotent-quote-key-123';
+  it("should return identical cached quote on 10 duplicate calculation requests with same idempotency key", async () => {
+    const store = new InMemorySessionStore();
+    const auditRepo = new MemoryAuditRepository();
+    const auditStore = new AuditStore(auditRepo);
+    const engine = new FunnelEngine(store, auditStore);
 
-    // 1st calculation
-    const q1 = await engine.calculateQuote(session.sessionId, { idempotencyKey });
+    const session = await createReadySession(engine);
+    const idempotencyKey = "unique_order_key_777";
 
-    // Repeated 10 times
+    // First call: executes calculation
+    const firstQuote = await engine.calculateQuote(session.sessionId, {
+      idempotencyKey,
+    });
+    expect(firstQuote.quoteId).toBeDefined();
+
+    // 10 Repeated calls with identical idempotencyKey
     for (let i = 0; i < 10; i++) {
-      const qRepeat = await engine.calculateQuote(session.sessionId, { idempotencyKey });
-      expect(qRepeat.quoteId).toBe(q1.quoteId);
-      expect(qRepeat.quoteHash).toBe(q1.quoteHash);
-      expect(qRepeat.pricing.totalAnnualPremium).toBe(q1.pricing.totalAnnualPremium);
+      const replayedQuote = await engine.calculateQuote(session.sessionId, {
+        idempotencyKey,
+      });
+      expect(replayedQuote.quoteId).toBe(firstQuote.quoteId);
+      expect(replayedQuote.quoteHash).toBe(firstQuote.quoteHash);
+      expect(replayedQuote.pricing.totalAnnualPremium).toBe(
+        firstQuote.pricing.totalAnnualPremium,
+      );
     }
 
-    // Verify audit contains request.replayed events
-    const events = await audit.getEventsBySession(session.sessionId);
-    const replayEvents = events.filter((e) => e.eventType === 'request.replayed');
-    expect(replayEvents.length).toBe(10);
+    // Verify audit log captured request.replayed events
+    const events = await auditStore.getEventsBySession(session.sessionId);
+    const replayedEvents = events.filter(
+      (e) => e.eventType === "request.replayed",
+    );
+    expect(replayedEvents.length).toBe(10);
   });
 
-  it('should return same adjusted quote on repeated adjustQuote requests', async () => {
+  it("should throw IDEMPOTENCY_KEY_CONFLICT when same idempotency key is reused with a different request payload", async () => {
     const store = new InMemorySessionStore();
-    const audit = new AuditStore();
-    const engine = new FunnelEngine(store, audit);
+    const auditRepo = new MemoryAuditRepository();
+    const auditStore = new AuditStore(auditRepo);
+    const engine = new FunnelEngine(store, auditStore);
 
-    const session = await engine.startSession('corr-idem-2');
-    await engine.submitPropertyBasics(session.sessionId, {
-      country: 'FR',
-      postcode: '75008',
-      propertyType: 'apartment',
-      occupancyType: 'owner_occupied'
+    const session = await createReadySession(engine);
+    await engine.calculateQuote(session.sessionId); // Initial quote
+
+    const sharedKey = "reused_key_conflict_123";
+
+    // First adjust call with deductible 300
+    await engine.adjustQuote(session.sessionId, {
+      deductible: 300,
+      coverageTier: "comfort",
+      idempotencyKey: sharedKey,
     });
-    await engine.submitRiskFactors(session.sessionId, {
-      constructionYearBand: '2000_2015',
-      floorAreaBand: '50_100_sqm',
-      isPrimaryResidence: true,
-      claimsCount5Years: 0
+
+    // Second adjust call with SAME key but DIFFERENT payload (deductible 500)
+    await expect(
+      engine.adjustQuote(session.sessionId, {
+        deductible: 500,
+        coverageTier: "comfort",
+        idempotencyKey: sharedKey,
+      }),
+    ).rejects.toThrow(/IDEMPOTENCY_KEY_CONFLICT/);
+  });
+
+  it("should throw IDEMPOTENCY_KEY_CONFLICT when same key is used across different operations", async () => {
+    const store = new InMemorySessionStore();
+    const auditRepo = new MemoryAuditRepository();
+    const auditStore = new AuditStore(auditRepo);
+    const engine = new FunnelEngine(store, auditStore);
+
+    const session = await createReadySession(engine);
+    const collisionKey = "cross_op_key_999";
+
+    // Used for calculateQuote
+    await engine.calculateQuote(session.sessionId, {
+      idempotencyKey: collisionKey,
     });
-    await engine.evaluateEligibility(session.sessionId);
-    await engine.selectCoverage(session.sessionId, { coverageTier: 'comfort', deductible: 300 });
-    await engine.confirmParameters(session.sessionId, true);
-    await engine.submitConsent(session.sessionId);
-    await engine.calculateQuote(session.sessionId);
 
-    const adjustKey = 'adjust-key-456';
-    const adj1 = await engine.adjustQuote(session.sessionId, { deductible: 500, idempotencyKey: adjustKey });
-    const adj2 = await engine.adjustQuote(session.sessionId, { deductible: 500, idempotencyKey: adjustKey });
-
-    expect(adj2.quoteId).toBe(adj1.quoteId);
-    expect(adj2.pricing.totalAnnualPremium).toBe(adj1.pricing.totalAnnualPremium);
+    // Reused for adjustQuote
+    await expect(
+      engine.adjustQuote(session.sessionId, {
+        deductible: 500,
+        idempotencyKey: collisionKey,
+      }),
+    ).rejects.toThrow(/IDEMPOTENCY_KEY_CONFLICT/);
   });
 });

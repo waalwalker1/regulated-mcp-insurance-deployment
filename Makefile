@@ -1,14 +1,16 @@
-.PHONY: setup dev lint typecheck test test-e2e eval demo security build release-check clean-generated help
+.PHONY: setup dev dev-pricing lint format-check typecheck test test-e2e test-coverage eval demo security build release-check clean-generated help
 
 help:
 	@echo "Available targets:"
 	@echo "  make setup           - Install dependencies (idempotent)"
 	@echo "  make dev             - Start interactive MCP server"
 	@echo "  make dev-pricing     - Start local pricing microservice"
-	@echo "  make lint            - Check formatting and style"
+	@echo "  make lint            - Check formatting and style (ESLint)"
+	@echo "  make format-check    - Check formatting with Prettier"
 	@echo "  make typecheck       - Typecheck TypeScript codebase strictly"
-	@echo "  make test            - Run unit & integration test suites"
+	@echo "  make test            - Run unit, protocol & integration test suites"
 	@echo "  make test-e2e        - Run full end-to-end workflow tests"
+	@echo "  make test-coverage   - Run test suite with V8 coverage thresholds"
 	@echo "  make eval            - Run reproducible evaluation suite (24 scenarios)"
 	@echo "  make demo            - Run automated demo scenario with console output"
 	@echo "  make security        - Run dependency audit and local security checks"
@@ -29,32 +31,40 @@ dev-pricing:
 	npx tsx apps/pricing-service/src/index.ts
 
 lint:
-	@echo "==> Checking code quality and types..."
-	npx tsc --noEmit
+	@echo "==> Running ESLint..."
+	npm run lint
+
+format-check:
+	@echo "==> Checking Prettier formatting..."
+	npm run format:check
 
 typecheck:
 	@echo "==> Typechecking TypeScript codebase..."
-	npx tsc --noEmit
+	npm run typecheck
 
 test:
-	@echo "==> Running unit and integration tests..."
-	npx vitest run
+	@echo "==> Running unit, protocol and integration tests..."
+	npm run test
 
 test-e2e:
-	@echo "==> Running end-to-end integration tests..."
-	npx vitest run tests/integration
+	@echo "==> Running end-to-end protocol and integration tests..."
+	npm run test:protocol && npm run test:integration
+
+test-coverage:
+	@echo "==> Running test suite with coverage thresholds..."
+	npm run test:coverage
 
 eval:
 	@echo "==> Running reproducible evaluation benchmark..."
-	npx tsx scripts/run-eval.ts
+	npm run eval
 
 demo:
 	@echo "==> Executing Northstar MCP Quote Funnel Demonstration..."
-	npx tsx scripts/demo-flow.ts
+	npm run demo
 
 security:
 	@echo "==> Running dependency security audit..."
-	npm audit --audit-level=high
+	npm run security
 
 build:
 	@echo "==> Compiling TypeScript monorepo..."
@@ -64,16 +74,20 @@ release-check:
 	@echo "=========================================="
 	@echo "  RUNNING MANDATORY RELEASE AUDIT GATES   "
 	@echo "=========================================="
-	@echo "Gate 1/5: Typecheck"
-	npx tsc --noEmit
-	@echo "Gate 2/5: Test Suite"
-	npx vitest run
-	@echo "Gate 3/5: Reproducible Evaluation Benchmark"
-	npx tsx scripts/run-eval.ts
-	@echo "Gate 4/5: Security Audit"
-	npm audit --audit-level=high
-	@echo "Gate 5/5: Demo Execution"
-	npx tsx scripts/demo-flow.ts
+	@echo "Gate 1/7: Format Check (Prettier)"
+	npm run format:check
+	@echo "Gate 2/7: Linter (ESLint)"
+	npm run lint
+	@echo "Gate 3/7: Strict Typecheck (TypeScript)"
+	npm run typecheck
+	@echo "Gate 4/7: Test Suite & Coverage Thresholds"
+	npm run test:coverage
+	@echo "Gate 5/7: Reproducible Evaluation Benchmark (24 Scenarios)"
+	npm run eval
+	@echo "Gate 6/7: Security Audit (npm audit)"
+	npm run security
+	@echo "Gate 7/7: Local Zero-Credential Demo Flow"
+	npm run demo
 	@echo "=========================================="
 	@echo "  ALL RELEASE GATES PASSED SUCCESSFULLY   "
 	@echo "=========================================="

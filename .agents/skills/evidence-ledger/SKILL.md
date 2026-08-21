@@ -8,6 +8,7 @@ description: Maintains traceability between requirements, implementation, tests,
 Create and maintain `docs/agent/EVIDENCE_LEDGER.md` and `docs/portfolio/ROLE_REQUIREMENT_MAP.md`.
 
 For every important requirement record:
+
 - requirement;
 - source;
 - planned proof;

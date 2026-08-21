@@ -5,7 +5,7 @@ const PROMPT_INJECTION_PATTERNS = [
   /set\s+(premium|price)\s+to\s+0/i,
   /override\s+eligibility/i,
   /bypass\s+consent/i,
-  /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/i
+  /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/i,
 ];
 
 export interface SanitizationResult {
@@ -14,7 +14,10 @@ export interface SanitizationResult {
   sanitizedValue: string;
 }
 
-export function sanitizeTextInput(input: string, maxLength: number = 255): SanitizationResult {
+export function sanitizeTextInput(
+  input: string,
+  maxLength: number = 255,
+): SanitizationResult {
   const trimmed = input.trim().slice(0, maxLength);
   const detectedThreats: string[] = [];
 
@@ -26,12 +29,12 @@ export function sanitizeTextInput(input: string, maxLength: number = 255): Sanit
 
   // Remove potential HTML/script tags and control characters
   const sanitized = trimmed
-    .replace(/[<>]/g, '')
-    .replace(/[\x00-\x1F\x7F]/g, '');
+    .replace(/[<>]/g, "")
+    .replace(/[\x00-\x1F\x7F]/g, "");
 
   return {
     isSafe: detectedThreats.length === 0,
     detectedThreats,
-    sanitizedValue: sanitized
+    sanitizedValue: sanitized,
   };
 }

@@ -5,6 +5,7 @@ This repository incorporates open-source libraries under permissive licenses:
 ---
 
 ## 1. @modelcontextprotocol/sdk
+
 - **License:** MIT License
 - **Copyright:** (c) Anthropic PBC / Model Context Protocol Contributors
 - **URL:** https://github.com/modelcontextprotocol/typescript-sdk
@@ -12,6 +13,7 @@ This repository incorporates open-source libraries under permissive licenses:
 ---
 
 ## 2. @waniwani/sdk
+
 - **License:** MIT License
 - **Copyright:** (c) 2026 Waniwani AI
 - **URL:** https://github.com/WaniWani-AI/sdk
@@ -19,6 +21,7 @@ This repository incorporates open-source libraries under permissive licenses:
 ---
 
 ## 3. Zod
+
 - **License:** MIT License
 - **Copyright:** (c) 2020 Colin McDonnell
 - **URL:** https://github.com/colinhacks/zod
@@ -26,6 +29,7 @@ This repository incorporates open-source libraries under permissive licenses:
 ---
 
 ## 4. Fastify
+
 - **License:** MIT License
 - **Copyright:** (c) 2016-present Fastify Contributors
 - **URL:** https://github.com/fastify/fastify
@@ -33,4 +37,5 @@ This repository incorporates open-source libraries under permissive licenses:
 ---
 
 ## Non-Affiliation Statement
+
 Northstar Home Insurance EU is an independent technical proof-of-work demonstration kit. It is not affiliated with, endorsed by, or sponsored by Waniwani AI, Anthropic, or any commercial insurer.

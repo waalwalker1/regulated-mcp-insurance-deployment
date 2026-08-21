@@ -1,4 +1,4 @@
-import type { FunnelSession, IndicativeQuote } from '@northstar/domain';
+import type { FunnelSession, IndicativeQuote } from "@northstar/domain";
 
 export interface IdempotencyRecord {
   idempotencyKey: string;
@@ -11,10 +11,15 @@ export interface IdempotencyRecord {
 }
 
 export interface SessionStore {
-  createSession(sessionId: string, correlationId?: string, ttlSeconds?: number): Promise<FunnelSession>;
+  createSession(
+    sessionId: string,
+    correlationId?: string,
+    ttlSeconds?: number,
+  ): Promise<FunnelSession>;
   saveSession(session: FunnelSession): Promise<void>;
   getSession(sessionId: string): Promise<FunnelSession | null>;
   deleteSession(sessionId: string): Promise<boolean>;
+  anonymizeSession?(sessionId: string): Promise<boolean>;
   saveQuote(quote: IndicativeQuote): Promise<void>;
   getQuoteHistory(sessionId: string): Promise<IndicativeQuote[]>;
   getIdempotencyRecord(key: string): Promise<IdempotencyRecord | null>;

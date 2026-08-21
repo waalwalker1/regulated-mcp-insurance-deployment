@@ -46,18 +46,27 @@ jobs:
             exit 1
           fi
 
+      - name: Code Formatting Check
+        run: npm run format:check
+
+      - name: Static Code Analysis (ESLint)
+        run: npm run lint
+
       - name: Typecheck TypeScript Monorepo
         run: npm run typecheck
+
+      - name: Build Monorepo Artifacts
+        run: npm run build
 
       - name: Run Database Migrations
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/northstar_insurance
         run: npm run db:migrate
 
-      - name: Run Complete Test Suite (Unit, Protocol, Property, Adversarial, Integration)
+      - name: Run Complete Test Suite with Coverage
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/northstar_insurance
-        run: npm run test
+        run: npm run test:coverage
 
       - name: Run 24-Scenario Evaluation Benchmark
         run: npm run eval

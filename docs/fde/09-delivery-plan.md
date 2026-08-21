@@ -21,6 +21,7 @@ gantt
 ---
 
 ## Weekly Milestone Breakdown
+
 - **Week 1 (Discovery & Scoping):** Execute discovery questionnaire, finalize RTM, lock in/out of scope definitions.
 - **Week 2 (Security & Compliance):** Deliver security questionnaire response library, DPIA input data flows, and threat model review.
 - **Week 3 (Actuarial Integration):** Configure country base rates and risk multipliers in `packages/rules/src/v1.ts`. Run unit tests.
