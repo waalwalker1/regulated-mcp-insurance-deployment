@@ -1,7 +1,7 @@
 # Regulated MCP Insurance Deployment Kit
 ### Deterministic Quoting Architecture & Enterprise Delivery Kit for European Insurance
 
-[![CI](https://github.com/northstar-ai/regulated-mcp-insurance-deployment/actions/workflows/ci.yml/badge.svg)](https://github.com/northstar-ai/regulated-mcp-insurance-deployment/actions/workflows/ci.yml)
+[![CI](https://github.com/waalwalker1/regulated-mcp-insurance-deployment/actions/workflows/ci.yml/badge.svg)](https://github.com/waalwalker1/regulated-mcp-insurance-deployment/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Node.js: v20+](https://img.shields.io/badge/Node.js-v20%2B-green.svg)](https://nodejs.org)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Strict%20Mode-blue.svg)](https://www.typescriptlang.org/)

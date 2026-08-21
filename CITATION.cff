@@ -5,7 +5,7 @@ authors:
 title: "Regulated MCP Insurance Deployment Kit: Deterministic Quoting Architecture for Enterprise Assistants"
 version: 0.1.0
 date-released: 2026-08-21
-url: "https://github.com/northstar-ai/regulated-mcp-insurance-deployment"
+url: "https://github.com/waalwalker1/regulated-mcp-insurance-deployment"
 license: MIT
 keywords:
   - "model-context-protocol"
