@@ -35,14 +35,15 @@ make clean-generated # Clean temporary build/eval artifacts
 ```
 
 ## Control Plane & Ledgers
-- Specifications: [BUILD_SPEC.md](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/BUILD_SPEC.md)
-- Status Ledger: [docs/agent/STATUS.json](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/docs/agent/STATUS.json)
-- Task Dependency DAG: [docs/agent/TASK_DAG.md](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/docs/agent/TASK_DAG.md)
-- Architecture Decisions: [docs/agent/DECISIONS.md](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/docs/agent/DECISIONS.md)
-- Evidence Ledger: [docs/agent/EVIDENCE_LEDGER.md](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/docs/agent/EVIDENCE_LEDGER.md)
-- Source Snapshot: [docs/agent/SOURCE_SNAPSHOT.md](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/docs/agent/SOURCE_SNAPSHOT.md)
-- Assumptions Ledger: [docs/agent/ASSUMPTIONS.md](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/docs/agent/ASSUMPTIONS.md)
-- Release Audit: [docs/agent/RELEASE_AUDIT.md](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/docs/agent/RELEASE_AUDIT.md)
+- Specifications: [BUILD_SPEC.md](./BUILD_SPEC.md)
+- Status Ledger: [docs/agent/STATUS.json](./docs/agent/STATUS.json)
+- Task Dependency DAG: [docs/agent/TASK_DAG.md](./docs/agent/TASK_DAG.md)
+- Architecture Decisions: [docs/agent/DECISIONS.md](./docs/agent/DECISIONS.md)
+- Evidence Ledger: [docs/agent/EVIDENCE_LEDGER.md](./docs/agent/EVIDENCE_LEDGER.md)
+- Source Snapshot: [docs/agent/SOURCE_SNAPSHOT.md](./docs/agent/SOURCE_SNAPSHOT.md)
+- Assumptions Ledger: [docs/agent/ASSUMPTIONS.md](./docs/agent/ASSUMPTIONS.md)
+- Release Audit: [docs/agent/RELEASE_AUDIT.md](./docs/agent/RELEASE_AUDIT.md)
+- Remediation Release Audit: [docs/agent/REMEDIATION_RELEASE_AUDIT.md](./docs/agent/REMEDIATION_RELEASE_AUDIT.md)
 
 ## Subsystem & File Ownership
 - **Orchestrator:** Root configs, Makefile, package coordination, releases.

@@ -8,7 +8,7 @@ The core requirement of the Northstar Home Insurance EU reference implementation
 - persist unvalidated state transitions.
 
 ## 2. Domain Schema Hierarchy
-All schemas are strictly defined using [Zod](https://github.com/colinhacks/zod) in [`packages/domain/src/schemas.ts`](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/packages/domain/src/schemas.ts).
+All schemas are strictly defined using [Zod](https://github.com/colinhacks/zod) in [`packages/domain/src/schemas.ts`](../../packages/domain/src/schemas.ts).
 
 ### User-Supplied Fields
 | Field | Type / Enum | Validation Rules | Purpose |
@@ -34,7 +34,7 @@ All schemas are strictly defined using [Zod](https://github.com/colinhacks/zod) 
 - `fictionalTaxAmount`: Country-specific insurance premium tax.
 - `totalAnnualPremium`: Final non-binding annual total.
 - `totalMonthlyPremium`: Annual / 12 rounded to cents.
-- `quoteHash`: Deterministic SHA-256 fingerprint over `(ruleVersion, input, pricing)`.
+- `quoteHash`: Deterministic SHA-256 fingerprint over non-PII decision parameters.
 - `ruleVersion`: Version identifier (e.g., `northstar-home-eu-v1`).
 - `expiresAt`: ISO-8601 timestamp (30 days from calculation).
 
@@ -53,9 +53,9 @@ $$\text{totalAnnual} = \text{netAnnual} + \text{tax}$$
 
 $$\text{totalMonthly} = \text{round}\left(\frac{\text{totalAnnual}}{12}, 2\right)$$
 
-All multipliers and coefficients reside in versioned configurations ([`packages/rules/src/v1.ts`](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/packages/rules/src/v1.ts)).
+All multipliers and coefficients reside in versioned configurations ([`packages/rules/src/v1.ts`](../../packages/rules/src/v1.ts)).
 
 ---
 
 ## 4. Rule Versioning and Replay Guarantee
-Every generated quote persists its `ruleVersion`. If underwriting rules are revised (e.g., in [`v2.ts`](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/packages/rules/src/v2.ts)), historical quotes retain their original `ruleVersion` and can be deterministically re-evaluated to reproduce the identical premium and cryptographic hash.
+Every generated quote persists its `ruleVersion`. If underwriting rules are revised (e.g., in [`v2.ts`](../../packages/rules/src/v2.ts)), historical quotes retain their original `ruleVersion` and can be deterministically re-evaluated to reproduce the identical premium and cryptographic hash.

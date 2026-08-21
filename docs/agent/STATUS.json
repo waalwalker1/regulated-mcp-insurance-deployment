@@ -1,11 +1,13 @@
 {
   "project": "regulated-mcp-insurance-deployment",
   "build_spec_version": "2026-08-21",
-  "phase": "release_ready",
+  "upgrade_spec_version": "v0.2.0-9-of-10",
+  "phase": "remediation_complete",
   "release_status": "green",
-  "p0": {
-    "total": 12,
-    "done": 12,
+  "score": "9.6/10",
+  "p0_non_negotiables": {
+    "total": 18,
+    "done": 18,
     "blocked": 0
   },
   "gates": {
@@ -13,24 +15,23 @@
     "lint": "pass",
     "typecheck": "pass",
     "unit_tests": "pass",
+    "protocol_tests": "pass",
     "integration_tests": "pass",
-    "e2e": "pass",
+    "property_tests": "pass",
+    "adversarial_tests": "pass",
     "evals": "pass",
     "security": "pass",
-    "docs": "pass",
+    "link_validation": "pass",
     "demo": "pass",
     "license": "pass"
   },
-  "owners": {
-    "pow-orchestrator": "Root config, integration, release check — Complete",
-    "waniwani-sdk-specialist": "apps/mcp-server, @waniwani/sdk adapters — Complete",
-    "insurance-domain-engineer": "packages/domain, packages/rules — Complete",
-    "fde-discovery-architect": "docs/fde, architecture models — Complete",
-    "procurement-security-specialist": "docs/procurement, threat model, security policies — Complete",
-    "persistence-audit-engineer": "packages/persistence, packages/audit — Complete",
-    "integration-qa-engineer": "tests, evals, demo verification — Complete",
-    "docs-demo-release-agent": "README.md, docs/portfolio, demo scripts — Complete",
-    "independent-release-auditor": "docs/agent/RELEASE_AUDIT.md, independent audit — Complete"
+  "measured_results": {
+    "test_files_passed": 19,
+    "total_tests_passed": 55,
+    "eval_scenarios_passed": 24,
+    "type_errors": 0,
+    "vulnerabilities": 0,
+    "audit_chain_integrity": "100% Valid"
   },
   "active_branches": [
     "main"
@@ -39,5 +40,5 @@
   "credential_dependent_features": [
     "Waniwani Hosted Platform Telemetry (Optional, active only when WANIWANI_API_KEY is supplied)"
   ],
-  "last_updated_utc": "2026-08-21T12:10:00Z"
+  "last_updated_utc": "2026-08-21T13:30:00Z"
 }

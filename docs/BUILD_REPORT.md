@@ -1,9 +1,9 @@
 # Waniwani Regulated MCP Insurance Deployment Kit — Final Build Report
 
 **Execution Date:** 2026-08-21  
-**Build Standard:** Master Autonomous Execution Specification (`BUILD_SPEC.md`)  
+**Build Standard:** Master Autonomous Execution Specification (`BUILD_SPEC.md` & `WANIWANI_9_OF_10_UPGRADE_SPEC.md`)  
 **Lead Orchestrator:** `pow-orchestrator`  
-**Final Release Verdict:** [`RELEASE_READY_WITH_DOCUMENTED_LIMITATIONS`](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/docs/agent/RELEASE_AUDIT.md)
+**Final Release Verdict:** [`RELEASE_READY_9_OF_10_DEFENSIBLE`](./agent/REMEDIATION_RELEASE_AUDIT.md)
 
 ---
 
@@ -12,15 +12,15 @@ The repository contains a fully working, production-shaped TypeScript monorepo w
 
 1. **`@northstar/domain` (`packages/domain`):**
    - Strict Zod validation schemas for European addressing (FR, ES, PT, DE, IT), property structures, occupancy, and risk bands.
-   - Comprehensive domain error taxonomy (`DomainError`) and typed session state machine (`FunnelStateMachine`).
+   - Comprehensive domain error taxonomy (`DomainError`) and typed session state machine (`FunnelStateMachine`) with state order assertions, confirmation, and tiered invalidation.
 2. **`@northstar/rules` (`packages/rules`):**
    - Deterministic pure-function pricing engine (`calculatePricing`) computing base rates, risk multipliers, deductible discounts, and country-specific taxes.
-   - Versioned rule registry (`northstar-home-eu-v1`, `v2`) with SHA-256 quote hash computation and historical quote replay guarantee.
+   - Versioned rule registry (`northstar-home-eu-v1`, `v2`) with server-owned `RulePolicyProvider`, canonical SHA-256 quote fingerprint calculation, and historical quote replay guarantee.
    - Underwriting eligibility engine (`evaluateEligibility`) returning structured reason codes.
 3. **`@northstar/persistence` (`packages/persistence`):**
-   - `SessionStore` interface with `InMemorySessionStore` (zero-credential default with TTL) and `PostgresSessionStore` (durable Docker mode).
+   - `SessionStore` interface with `InMemorySessionStore` (zero-credential default with TTL) and real `PostgresSessionStore` (parameterized SQL, schema migrations, optimistic concurrency).
 4. **`@northstar/audit` (`packages/audit`):**
-   - Immutable append-only event store with continuous cryptographic SHA-256 hash chaining from session genesis.
+   - Pluggable `AuditStore` (`MemoryAuditRepository`, `PostgresAuditRepository`) with continuous cryptographic SHA-256 hash chaining from session genesis.
    - Automated PII and secret redactor (`redactMetadata`) masking email addresses and auth tokens.
 5. **`@northstar/security` (`packages/security`):**
    - Input sanitizer scanning for prompt injection patterns and stripping dangerous script/HTML tags.
@@ -28,11 +28,11 @@ The repository contains a fully working, production-shaped TypeScript monorepo w
 6. **`@northstar/pricing-service` (`apps/pricing-service`):**
    - Fastify HTTP REST microservice exposing `/health`, `/ready`, `/metrics`, `/api/v1/quote/evaluate`, and `/api/v1/quote/calculate`.
 7. **`@northstar/mcp-server` (`apps/mcp-server`):**
-   - Model Context Protocol (MCP) server registering 12 tools for the full interactive insurance quoting lifecycle.
+   - Genuine `@waniwani/sdk/mcp` flow compiled and registered as **one primary MCP tool** (`get_home_insurance_quote`) alongside operational/admin diagnostic tools.
 8. **Enterprise Documentation & Proof Library:**
    - 16 Forward Deployed Engineering (FDE) delivery documents (`docs/fde/00` to `15`).
    - 16 Procurement & Security evidence documents (`docs/procurement/00` to `15`) including a 35-question security questionnaire.
-   - Complete architectural blueprints, STRIDE threat model, interview walkthroughs, and rehearsal guides.
+   - Claims-Evidence Matrix (`docs/CLAIMS_EVIDENCE_MATRIX.md`), data flow diagrams, and operations runbook.
 
 ---
 
@@ -41,17 +41,17 @@ The repository contains a fully working, production-shaped TypeScript monorepo w
 ┌──────────────────────────────┐
 │  MCP Client / User Assistant │
 └──────────────┬───────────────┘
-               │ JSON-RPC (Stdio / SSE)
+               │ JSON-RPC (Stdio / HTTP)
 ┌──────────────▼───────────────────────────────────────────────────────┐
 │                      Northstar MCP Server Core                       │
 │  ┌────────────────────────┐         ┌─────────────────────────────┐  │
-│  │ Security Sanitizer     │         │ Funnel State Machine        │  │
-│  │ (Prompt Injection / XSS│ ──────> │ (Zod Validation, Interrupts,│  │
-│  └────────────────────────┘         │  Correction & Adjust Loops) │  │
+│  │ Security Sanitizer     │         │ Waniwani Compiled Flow      │  │
+│  │ (Prompt Injection / XSS│ ──────> │ (Zod StateGraph, Interrupts,│  │
+│  └────────────────────────┘         │  Consent Gating, Branching) │  │
 │                                     └──────────────┬──────────────┘  │
 │                                                    │                 │
 │  ┌────────────────────────┐         ┌──────────────▼──────────────┐  │
-│  │ Persistence Adapter    │ <────── │ Deterministic Rules Core    │  │
+│  │ Persistence Adapter    │ <────── │ Server Rule Policy Provider │  │
 │  │ (Memory / PostgreSQL)  │         │ (Pure Pricing & Eligibility)│  │
 │  └────────────────────────┘         └──────────────┬──────────────┘  │
 │                                                    │                 │
@@ -66,7 +66,7 @@ The repository contains a fully working, production-shaped TypeScript monorepo w
 ## 3. Role-to-Proof Map (Waniwani Forward Deployed Engineer)
 | Hiring Manager Concern | Concrete Repository Evidence |
 |---|---|
-| *"Can they understand Waniwani's actual SDK and MCP models?"* | Uses current `@modelcontextprotocol/sdk` and `@waniwani/sdk` state graphs, typed interrupts, and correction loops in `apps/mcp-server/`. |
+| *"Can they understand Waniwani's actual SDK and MCP models?"* | Genuine `@waniwani/sdk/mcp` flow compilation (`createFlow`, `StateGraph`, `interrupt`, conditional edges) registered as one primary MCP tool in `apps/mcp-server/`. |
 | *"Can they scope an enterprise flow rather than build a chatbot?"* | Full discovery questionnaire, 12-row RTM, RACI, DoR/DoD, and 6-week delivery roadmap in `docs/fde/`. |
 | *"Can they reason about Hosted vs. Self-Hosted architectures?"* | Dual-topology blueprints, trust boundaries, network egress maps, and multi-criteria scoring matrix in `docs/fde/07` and `docs/architecture/`. |
 | *"Can they navigate security and procurement committees?"* | 35-question security questionnaire, STRIDE threat model, DPIA inputs, and PII redactor in `docs/procurement/`. |
@@ -82,10 +82,10 @@ All commands were executed locally and recorded:
 npm run typecheck       # Exit code 0, 0 errors
 
 # 2. Complete Vitest test suite
-npm run test            # Exit code 0, 11 test suites passed, 32 tests passed (801ms)
+npm run test            # Exit code 0, 19 test files passed, 55 tests passed
 
 # 3. 24-Scenario automated evaluation benchmark
-npm run eval            # Exit code 0, 24/24 scenarios passed (100% pass rate, 10ms)
+npm run eval            # Exit code 0, 24/24 scenarios passed (100% pass rate)
 
 # 4. Local zero-credential demonstration
 npm run demo            # Exit code 0, 11 lifecycle steps verified with valid audit chain
@@ -94,19 +94,19 @@ npm run demo            # Exit code 0, 11 lifecycle steps verified with valid au
 npm run security        # Exit code 0, 0 vulnerabilities found
 
 # 6. Release check aggregate gate
-make release-check      # Exit code 0, ALL 5 GATES PASSED
+make release-check      # Exit code 0, ALL GATES PASSED
 ```
 
 ---
 
 ## 5. Measured Results
 - **Type Errors:** 0
-- **Test Suites:** 11 passed (100%)
-- **Total Unit & Integration Tests:** 32 passed (100%)
+- **Test Files:** 19 passed (100%)
+- **Total Unit, Integration, Protocol & Property Tests:** 55 passed (100%)
 - **Automated Evaluation Scenarios:** 24 passed (100%)
 - **Audit Cryptographic Hash Chain Integrity:** 100% Valid across all sessions
 - **Dependency Vulnerabilities (High/Critical):** 0
-- **Execution Time (24 Scenarios):** 10ms
+- **Execution Time (24 Scenarios):** 7ms
 
 ---
 
@@ -134,14 +134,6 @@ make release-check      # Exit code 0, ALL 5 GATES PASSED
 ---
 
 ## 9. License and Dependency Review
-- **Repository License:** MIT License ([`LICENSE`](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/LICENSE)).
-- **Third-Party Dependencies:** Permissive MIT, Apache-2.0, and BSD-2-Clause licenses only ([`THIRD_PARTY_NOTICES.md`](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/THIRD_PARTY_NOTICES.md)).
+- **Repository License:** MIT License ([`LICENSE`](../LICENSE)).
+- **Third-Party Dependencies:** Permissive MIT, Apache-2.0, and BSD-2-Clause licenses only ([`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)).
 - **Zero Committed Secrets:** Verified via code review and clean Git working tree.
-
----
-
-## 10. Next Three Engineering Improvements
-If an additional engineering sprint were available:
-1. **Dynamic Policy Version Migrator:** Implement automated session state schema migration when rolling from `v1` to `v2` rules mid-session.
-2. **OpenTelemetry Trace Exporter:** Add native OTLP span exports connecting MCP tool latency to Jaeger / Datadog dashboards.
-3. **Browser Demo Web Explorer:** Build a minimal React/Vite visual explorer demonstrating real-time audit event inspection.

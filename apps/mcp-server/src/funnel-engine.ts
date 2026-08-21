@@ -1,7 +1,6 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
 import type {
   FunnelSession,
-  PartialQuoteInput,
   SupportedCountry,
   PropertyType,
   OccupancyType,
@@ -9,7 +8,8 @@ import type {
   FloorAreaBand,
   CoverageTier,
   DeductibleOption,
-  GeneratedQuote
+  GeneratedQuote,
+  CorrectionInput
 } from '@northstar/domain';
 import { DomainError, FunnelStateMachine } from '@northstar/domain';
 import type { SessionStore } from '@northstar/persistence';
@@ -19,15 +19,21 @@ import { sanitizeTextInput } from '@northstar/security';
 import {
   evaluateEligibility,
   calculatePricing,
-  computeQuoteHash,
+  computeCanonicalQuoteFingerprint,
   getRuleSet,
-  DEFAULT_RULE_VERSION
+  defaultRulePolicyProvider,
+  type RulePolicyProvider
 } from '@northstar/rules';
+
+export interface QuoteCalculationOptions {
+  idempotencyKey?: string;
+}
 
 export class FunnelEngine {
   constructor(
     public store: SessionStore = createSessionStore(),
-    public auditStore: AuditStore = globalAuditStore
+    public auditStore: AuditStore = globalAuditStore,
+    public rulePolicy: RulePolicyProvider = defaultRulePolicyProvider
   ) {}
 
   /**
@@ -35,8 +41,22 @@ export class FunnelEngine {
    */
   async startSession(correlationId: string = randomUUID()): Promise<FunnelSession> {
     const sessionId = randomUUID();
-    const session = await this.store.createSession(sessionId, correlationId);
-    session.step = 'COLLECTING_PROPERTY';
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 3600 * 1000).toISOString();
+
+    const session: FunnelSession = {
+      sessionId,
+      correlationId,
+      step: 'COLLECTING_PROPERTY',
+      partialInput: {},
+      historicalQuotes: [],
+      correctionCount: 0,
+      version: 1,
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+      expiresAt
+    };
+
     await this.store.saveSession(session);
 
     await this.auditStore.recordEvent({
@@ -63,6 +83,7 @@ export class FunnelEngine {
     }
   ): Promise<FunnelSession> {
     const session = await this.requireSession(sessionId);
+    FunnelStateMachine.assertStep(session, ['COLLECTING_PROPERTY', 'INIT']);
 
     const sanitization = sanitizeTextInput(params.postcode);
     if (!sanitization.isSafe) {
@@ -76,14 +97,12 @@ export class FunnelEngine {
       throw new DomainError('TAMPERING_DETECTED', 'Malicious or invalid content detected in postcode.');
     }
 
-    FunnelStateMachine.updateInput(session, {
-      country: params.country,
-      postcode: sanitization.sanitizedValue,
-      propertyType: params.propertyType,
-      occupancyType: params.occupancyType
-    });
+    session.partialInput.country = params.country;
+    session.partialInput.postcode = sanitization.sanitizedValue;
+    session.partialInput.propertyType = params.propertyType;
+    session.partialInput.occupancyType = params.occupancyType;
 
-    session.step = 'COLLECTING_RISK';
+    FunnelStateMachine.transition(session, 'COLLECTING_RISK');
     await this.store.saveSession(session);
 
     await this.auditStore.recordEvent({
@@ -116,15 +135,14 @@ export class FunnelEngine {
     }
   ): Promise<FunnelSession> {
     const session = await this.requireSession(sessionId);
+    FunnelStateMachine.assertStep(session, ['COLLECTING_RISK', 'COLLECTING_PROPERTY']);
 
-    FunnelStateMachine.updateInput(session, {
-      constructionYearBand: params.constructionYearBand,
-      floorAreaBand: params.floorAreaBand,
-      isPrimaryResidence: params.isPrimaryResidence,
-      claimsCount5Years: params.claimsCount5Years
-    });
+    session.partialInput.constructionYearBand = params.constructionYearBand;
+    session.partialInput.floorAreaBand = params.floorAreaBand;
+    session.partialInput.isPrimaryResidence = params.isPrimaryResidence;
+    session.partialInput.claimsCount5Years = params.claimsCount5Years;
 
-    session.step = 'EVALUATING_ELIGIBILITY';
+    FunnelStateMachine.transition(session, 'EVALUATING_ELIGIBILITY');
     await this.store.saveSession(session);
 
     await this.auditStore.recordEvent({
@@ -144,21 +162,23 @@ export class FunnelEngine {
   }
 
   /**
-   * 4. Evaluate Underwriting Eligibility
+   * 4. Evaluate Underwriting Eligibility (Server-Owned Rule Version)
    */
-  async evaluateEligibility(sessionId: string, ruleVersion: string = DEFAULT_RULE_VERSION): Promise<FunnelSession> {
+  async evaluateEligibility(sessionId: string): Promise<FunnelSession> {
     const session = await this.requireSession(sessionId);
-    const ruleSet = getRuleSet(ruleVersion);
+    FunnelStateMachine.assertStep(session, ['EVALUATING_ELIGIBILITY', 'COLLECTING_RISK', 'COLLECTING_PROPERTY']);
 
-    // Validate partial inputs so far
     const input = FunnelStateMachine.validateInputs(session);
+    const activeRuleVersion = this.rulePolicy.getActiveRuleVersion({ country: input.country });
+    const ruleSet = getRuleSet(activeRuleVersion);
+
     const eligibility = evaluateEligibility(input, ruleSet);
     session.eligibilityResult = eligibility;
 
     if (eligibility.isEligible) {
-      session.step = 'COLLECTING_COVERAGE';
+      FunnelStateMachine.transition(session, 'COLLECTING_COVERAGE');
     } else {
-      session.step = 'REFERRED';
+      FunnelStateMachine.transition(session, 'REFERRED');
     }
 
     await this.store.saveSession(session);
@@ -166,7 +186,7 @@ export class FunnelEngine {
     await this.auditStore.recordEvent({
       sessionId,
       correlationId: session.correlationId,
-      eventType: eligibility.isEligible ? 'eligibility.evaluated' : 'quote.referred',
+      eventType: 'eligibility.evaluated',
       actor: 'server',
       ruleVersion: ruleSet.version,
       metadata: {
@@ -191,28 +211,27 @@ export class FunnelEngine {
     }
   ): Promise<FunnelSession> {
     const session = await this.requireSession(sessionId);
+    FunnelStateMachine.assertStep(session, ['COLLECTING_COVERAGE', 'EVALUATING_ELIGIBILITY']);
 
     if (params.contactEmail) {
       const sanitization = sanitizeTextInput(params.contactEmail);
       if (!sanitization.isSafe) {
-        throw new DomainError('TAMPERING_DETECTED', 'Invalid email format.');
+        throw new DomainError('TAMPERING_DETECTED', 'Invalid contact email format.');
       }
     }
 
-    FunnelStateMachine.updateInput(session, {
-      coverageTier: params.coverageTier || 'comfort',
-      deductible: params.deductible || 300,
-      contactEmail: params.contactEmail
-    });
+    session.partialInput.coverageTier = params.coverageTier || 'comfort';
+    session.partialInput.deductible = params.deductible || 300;
+    session.partialInput.contactEmail = params.contactEmail;
 
-    session.step = 'AWAITING_CONFIRMATION';
+    FunnelStateMachine.transition(session, 'AWAITING_CONFIRMATION');
     await this.store.saveSession(session);
 
     await this.auditStore.recordEvent({
       sessionId,
       correlationId: session.correlationId,
-      eventType: 'confirmation.requested',
-      actor: 'server',
+      eventType: 'field.received',
+      actor: 'user',
       metadata: {
         coverageTier: session.partialInput.coverageTier,
         deductible: session.partialInput.deductible
@@ -227,22 +246,15 @@ export class FunnelEngine {
    */
   async confirmParameters(sessionId: string, confirmed: boolean): Promise<FunnelSession> {
     const session = await this.requireSession(sessionId);
-
-    if (!confirmed) {
-      session.step = 'COLLECTING_PROPERTY';
-      await this.store.saveSession(session);
-      return session;
-    }
-
-    session.step = 'AWAITING_CONSENT';
+    FunnelStateMachine.confirmParameters(session, confirmed);
     await this.store.saveSession(session);
 
     await this.auditStore.recordEvent({
       sessionId,
       correlationId: session.correlationId,
-      eventType: 'confirmation.granted',
+      eventType: 'parameters.confirmed',
       actor: 'user',
-      metadata: { confirmed: true }
+      metadata: { confirmed: true, confirmedAt: session.parametersConfirmedAt }
     });
 
     return session;
@@ -256,13 +268,7 @@ export class FunnelEngine {
     consentVersion: string = 'consent_v1_2026'
   ): Promise<FunnelSession> {
     const session = await this.requireSession(sessionId);
-
-    session.consentDeclaration = {
-      hasConsentedToDataProcessing: true,
-      consentVersion,
-      consentTimestamp: new Date().toISOString()
-    };
-
+    FunnelStateMachine.grantConsent(session, consentVersion);
     await this.store.saveSession(session);
 
     await this.auditStore.recordEvent({
@@ -272,7 +278,8 @@ export class FunnelEngine {
       actor: 'user',
       metadata: {
         consentVersion,
-        hasConsented: true
+        hasConsented: true,
+        grantedAt: session.consentGrantedAt
       }
     });
 
@@ -280,31 +287,62 @@ export class FunnelEngine {
   }
 
   /**
-   * 8. Calculate and Issue Deterministic Quote
+   * 8. Calculate and Issue Deterministic Quote (with Idempotency Guard)
    */
-  async calculateQuote(sessionId: string, ruleVersion?: string): Promise<GeneratedQuote> {
+  async calculateQuote(
+    sessionId: string,
+    options?: QuoteCalculationOptions
+  ): Promise<GeneratedQuote> {
     const session = await this.requireSession(sessionId);
-
-    // Invariant: Consent must be present
-    if (!session.consentDeclaration?.hasConsentedToDataProcessing) {
-      throw new DomainError(
-        'CONSENT_REQUIRED',
-        'Cannot calculate or present quote without verified, explicit user consent.'
-      );
-    }
+    FunnelStateMachine.assertReadyToQuote(session);
 
     const input = FunnelStateMachine.validateInputs(session);
-    const ruleSet = getRuleSet(ruleVersion || session.activeQuote?.ruleVersion);
-    const eligibility = evaluateEligibility(input, ruleSet);
+    const activeRuleVersion = this.rulePolicy.getActiveRuleVersion({ country: input.country });
+    const ruleSet = getRuleSet(activeRuleVersion);
 
+    // Compute request fingerprint for idempotency
+    const requestFingerprint = createHash('sha256')
+      .update(JSON.stringify({
+        sessionId,
+        input,
+        ruleVersion: ruleSet.version,
+        consentGrantedAt: session.consentGrantedAt,
+        parametersConfirmedAt: session.parametersConfirmedAt
+      }))
+      .digest('hex');
+
+    const effectiveIdempotencyKey = options?.idempotencyKey || `quote_calc_${session.sessionId}_${session.version}`;
+
+    // Check Idempotency Record
+    const existingRecord = await this.store.getIdempotencyRecord(effectiveIdempotencyKey);
+    if (existingRecord) {
+      if (existingRecord.requestFingerprint === requestFingerprint) {
+        await this.auditStore.recordEvent({
+          sessionId,
+          correlationId: session.correlationId,
+          eventType: 'request.replayed',
+          actor: 'user',
+          metadata: { idempotencyKey: effectiveIdempotencyKey, quoteId: (existingRecord.responsePayload as GeneratedQuote).quoteId }
+        });
+        return existingRecord.responsePayload as unknown as GeneratedQuote;
+      }
+    }
+
+    const eligibility = evaluateEligibility(input, ruleSet);
     if (!eligibility.isEligible) {
-      session.step = 'REFERRED';
+      FunnelStateMachine.transition(session, 'REFERRED');
       await this.store.saveSession(session);
       throw new DomainError('INELIGIBLE_RISK', eligibility.explanation, { eligibility });
     }
 
     const pricing = calculatePricing(input, ruleSet);
-    const quoteHash = computeQuoteHash(ruleSet.version, input, pricing);
+    const quoteHash = computeCanonicalQuoteFingerprint({
+      ruleVersion: ruleSet.version,
+      input,
+      pricing,
+      eligibility
+    });
+
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
@@ -324,8 +362,23 @@ export class FunnelEngine {
     };
 
     session.activeQuote = quote;
-    session.step = 'QUOTED';
+    session.lastQuoteFingerprint = quoteHash;
+    session.lastIdempotencyKey = effectiveIdempotencyKey;
+    FunnelStateMachine.transition(session, 'QUOTED');
+
     await this.store.saveSession(session);
+    await this.store.saveQuote(quote);
+
+    // Save Idempotency Record
+    await this.store.saveIdempotencyRecord({
+      idempotencyKey: effectiveIdempotencyKey,
+      sessionId: session.sessionId,
+      operation: 'calculateQuote',
+      requestFingerprint,
+      responsePayload: quote as unknown as Record<string, unknown>,
+      createdAt: now.toISOString(),
+      expiresAt: expiresAt.toISOString()
+    });
 
     await this.auditStore.recordEvent({
       sessionId,
@@ -358,13 +411,14 @@ export class FunnelEngine {
   }
 
   /**
-   * 9. Adjust Active Quote (e.g. Change Deductible or Tier without restarting flow)
+   * 9. Adjust Active Quote (with Idempotency Guard)
    */
   async adjustQuote(
     sessionId: string,
     params: {
       coverageTier?: CoverageTier;
       deductible?: DeductibleOption;
+      idempotencyKey?: string;
     }
   ): Promise<GeneratedQuote> {
     const session = await this.requireSession(sessionId);
@@ -373,13 +427,31 @@ export class FunnelEngine {
       throw new DomainError('INVALID_STATE_TRANSITION', 'No active quote to adjust.');
     }
 
+    const effectiveKey = params.idempotencyKey || `adjust_${sessionId}_tier_${params.coverageTier}_ded_${params.deductible}`;
+    const existingRecord = await this.store.getIdempotencyRecord(effectiveKey);
+    if (existingRecord) {
+      await this.auditStore.recordEvent({
+        sessionId,
+        correlationId: session.correlationId,
+        eventType: 'request.replayed',
+        actor: 'user',
+        metadata: { idempotencyKey: effectiveKey, quoteId: (existingRecord.responsePayload as GeneratedQuote).quoteId }
+      });
+      return existingRecord.responsePayload as unknown as GeneratedQuote;
+    }
+
     if (params.coverageTier) session.partialInput.coverageTier = params.coverageTier;
     if (params.deductible) session.partialInput.deductible = params.deductible;
 
     const input = FunnelStateMachine.validateInputs(session);
     const ruleSet = getRuleSet(session.activeQuote.ruleVersion);
     const pricing = calculatePricing(input, ruleSet);
-    const quoteHash = computeQuoteHash(ruleSet.version, input, pricing);
+    const quoteHash = computeCanonicalQuoteFingerprint({
+      ruleVersion: ruleSet.version,
+      input,
+      pricing,
+      eligibility: session.activeQuote.eligibility
+    });
 
     session.historicalQuotes.push(session.activeQuote);
 
@@ -394,7 +466,22 @@ export class FunnelEngine {
     };
 
     session.activeQuote = adjustedQuote;
+    session.lastQuoteFingerprint = quoteHash;
+    session.version += 1;
+    session.updatedAt = new Date().toISOString();
+
     await this.store.saveSession(session);
+    await this.store.saveQuote(adjustedQuote);
+
+    await this.store.saveIdempotencyRecord({
+      idempotencyKey: effectiveKey,
+      sessionId,
+      operation: 'adjustQuote',
+      requestFingerprint: quoteHash,
+      responsePayload: adjustedQuote as unknown as Record<string, unknown>,
+      createdAt: new Date().toISOString(),
+      expiresAt: adjustedQuote.expiresAt
+    });
 
     await this.auditStore.recordEvent({
       sessionId,
@@ -415,11 +502,11 @@ export class FunnelEngine {
   }
 
   /**
-   * 10. Direct Field Correction
+   * 10. Direct Strict Field Correction
    */
-  async correctField(sessionId: string, delta: PartialQuoteInput): Promise<FunnelSession> {
+  async correctField(sessionId: string, delta: CorrectionInput): Promise<FunnelSession> {
     const session = await this.requireSession(sessionId);
-    FunnelStateMachine.updateInput(session, delta);
+    FunnelStateMachine.applyCorrection(session, delta);
     await this.store.saveSession(session);
 
     await this.auditStore.recordEvent({
@@ -427,7 +514,7 @@ export class FunnelEngine {
       correlationId: session.correlationId,
       eventType: 'field.corrected',
       actor: 'user',
-      metadata: { delta, correctionCount: session.correctionCount }
+      metadata: { delta, correctionCount: session.correctionCount, newStep: session.step }
     });
 
     return session;

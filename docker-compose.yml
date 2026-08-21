@@ -49,10 +49,16 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: production
-      PORT: 3000
+      MCP_TRANSPORT: http
+      MCP_PORT: 3000
       PERSISTENCE_MODE: postgres
       DATABASE_URL: postgresql://northstar:northstar_dev_pass@postgres:5432/northstar_quotes
       PRICING_SERVICE_URL: http://pricing-service:3001
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 volumes:
   pgdata:

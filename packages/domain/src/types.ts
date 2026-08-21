@@ -1,10 +1,10 @@
 import type {
   QuoteInput,
   PartialQuoteInput,
-  ConsentDeclaration,
   EligibilityResult,
   PricingBreakdown,
-  GeneratedQuote
+  IndicativeQuote,
+  ConsentDeclaration
 } from './schemas.js';
 
 export type FunnelStep =
@@ -15,45 +15,49 @@ export type FunnelStep =
   | 'COLLECTING_COVERAGE'
   | 'AWAITING_CONFIRMATION'
   | 'AWAITING_CONSENT'
+  | 'READY_TO_QUOTE'
   | 'QUOTED'
   | 'REFERRED'
   | 'COMPLETED';
 
 export interface FunnelSession {
   sessionId: string;
+  correlationId: string;
   step: FunnelStep;
   partialInput: PartialQuoteInput;
   validatedInput?: QuoteInput;
   eligibilityResult?: EligibilityResult;
+  activeQuote?: IndicativeQuote;
+  historicalQuotes: IndicativeQuote[];
   consentDeclaration?: ConsentDeclaration;
-  activeQuote?: GeneratedQuote;
-  historicalQuotes: GeneratedQuote[];
+  parametersConfirmedAt?: string;
+  consentGrantedAt?: string;
+  lastIdempotencyKey?: string;
+  lastQuoteFingerprint?: string;
   correctionCount: number;
+  version: number;
   createdAt: string;
   updatedAt: string;
   expiresAt: string;
-  correlationId: string;
 }
-
-export type AuditActor = 'user' | 'assistant' | 'server' | 'system' | 'admin-demo';
 
 export type AuditEventType =
   | 'session.started'
   | 'field.received'
-  | 'field.rejected'
-  | 'field.corrected'
   | 'eligibility.evaluated'
-  | 'confirmation.requested'
-  | 'confirmation.granted'
-  | 'consent.requested'
+  | 'parameters.confirmed'
   | 'consent.granted'
   | 'quote.calculated'
-  | 'quote.presented'
   | 'quote.adjusted'
-  | 'quote.referred'
+  | 'quote.presented'
+  | 'field.corrected'
+  | 'request.replayed'
   | 'session.completed'
-  | 'session.expired'
-  | 'security.tampering_blocked';
+  | 'session.anonymized'
+  | 'security.tampering_blocked'
+  | 'system.error';
+
+export type AuditActor = 'user' | 'assistant' | 'server' | 'admin-demo';
 
 export interface AuditEvent {
   eventId: string;
@@ -63,7 +67,16 @@ export interface AuditEvent {
   eventType: AuditEventType;
   actor: AuditActor;
   ruleVersion?: string;
-  metadata: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   previousHash: string;
   currentHash: string;
+}
+
+export interface AuditVerificationResult {
+  isValid: boolean;
+  eventCount: number;
+  genesisHash: string;
+  latestHash?: string;
+  brokenIndex?: number;
+  reason?: string;
 }

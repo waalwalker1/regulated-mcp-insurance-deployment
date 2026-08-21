@@ -1,13 +1,25 @@
 import { randomUUID } from 'node:crypto';
-import type { AuditEvent, AuditEventType, AuditActor } from '@northstar/domain';
+import type { AuditEvent, AuditEventType } from '@northstar/domain';
 import { redactMetadata } from './redactor.js';
 import { calculateEventHash } from './hasher.js';
+import type { AuditRepository } from './audit-repository.js';
+import { MemoryAuditRepository } from './memory-audit-repository.js';
+import { PostgresAuditRepository } from './postgres-audit-repository.js';
 
 export const GENESIS_HASH = '0'.repeat(64);
 
 export class AuditStore {
-  private events: AuditEvent[] = [];
-  private sessionLastHashMap = new Map<string, string>();
+  private readonly repository: AuditRepository;
+
+  constructor(repository?: AuditRepository) {
+    if (repository) {
+      this.repository = repository;
+    } else if (process.env.PERSISTENCE_MODE === 'postgres' && process.env.DATABASE_URL) {
+      this.repository = new PostgresAuditRepository(process.env.DATABASE_URL);
+    } else {
+      this.repository = new MemoryAuditRepository();
+    }
+  }
 
   /**
    * Append an audit event to the tamper-evident chain
@@ -16,13 +28,14 @@ export class AuditStore {
     sessionId: string;
     correlationId: string;
     eventType: AuditEventType;
-    actor: AuditActor;
+    actor: 'user' | 'assistant' | 'server' | 'admin-demo';
     ruleVersion?: string;
     metadata?: Record<string, unknown>;
   }): Promise<AuditEvent> {
     const eventId = randomUUID();
     const timestamp = new Date().toISOString();
-    const previousHash = this.sessionLastHashMap.get(params.sessionId) || GENESIS_HASH;
+    const lastHash = await this.repository.getLastHash(params.sessionId);
+    const previousHash = lastHash || GENESIS_HASH;
     const sanitizedMetadata = redactMetadata(params.metadata || {});
 
     const currentHash = calculateEventHash(
@@ -50,9 +63,7 @@ export class AuditStore {
       currentHash
     };
 
-    this.events.push(event);
-    this.sessionLastHashMap.set(params.sessionId, currentHash);
-
+    await this.repository.append(event);
     return event;
   }
 
@@ -60,14 +71,17 @@ export class AuditStore {
    * Get all events for a given session ID
    */
   async getEventsBySession(sessionId: string): Promise<AuditEvent[]> {
-    return this.events.filter((e) => e.sessionId === sessionId);
+    return this.repository.getEventsBySession(sessionId);
   }
 
   /**
    * Get all events matching a correlation ID
    */
   async getEventsByCorrelationId(correlationId: string): Promise<AuditEvent[]> {
-    return this.events.filter((e) => e.correlationId === correlationId);
+    if (this.repository.getEventsByCorrelationId) {
+      return this.repository.getEventsByCorrelationId(correlationId);
+    }
+    return [];
   }
 
   /**
@@ -103,7 +117,7 @@ export class AuditStore {
         event.eventType,
         event.actor,
         event.ruleVersion,
-        event.metadata
+        event.metadata || {}
       );
 
       if (calculatedCurrentHash !== event.currentHash) {
@@ -123,9 +137,16 @@ export class AuditStore {
   /**
    * Clear events (used during tests / cleanup)
    */
-  clear(): void {
-    this.events = [];
-    this.sessionLastHashMap.clear();
+  async clear(): Promise<void> {
+    if (this.repository.clear) {
+      await this.repository.clear();
+    }
+  }
+
+  async close(): Promise<void> {
+    if (this.repository.close) {
+      await this.repository.close();
+    }
   }
 }
 

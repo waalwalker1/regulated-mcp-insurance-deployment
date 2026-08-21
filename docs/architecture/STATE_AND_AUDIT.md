@@ -1,7 +1,7 @@
 # State Persistence and Audit Architecture
 
 ## 1. State Persistence Strategy
-The kit implements a modular persistence interface ([`SessionStore`](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/packages/persistence/src/store.interface.ts)) supporting two deployment topologies:
+The kit implements a modular persistence interface ([`SessionStore`](../../packages/persistence/src/store.interface.ts)) supporting two deployment topologies:
 
 ```mermaid
 flowchart TD
@@ -16,7 +16,7 @@ flowchart TD
 ### Persistence Features
 - **Session Isolation:** Every session is keyed by an unguessable UUID. Tenant cross-talk is prevented.
 - **Time-to-Live (TTL):** Sessions expire after a configurable duration (default: 3600 seconds). Expired sessions cannot be accessed or modified.
-- **Right-to-Erasure:** Individual sessions can be scrubbed on demand via [`scripts/anonymize-session.ts`](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/scripts/anonymize-session.ts).
+- **Right-to-Erasure:** Individual sessions can be scrubbed on demand via [`scripts/anonymize-session.ts`](../../scripts/anonymize-session.ts).
 
 ---
 

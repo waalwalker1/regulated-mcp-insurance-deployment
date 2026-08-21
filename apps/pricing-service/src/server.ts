@@ -3,9 +3,9 @@ import { QuoteInputSchema, ConsentDeclarationSchema } from '@northstar/domain';
 import {
   evaluateEligibility,
   calculatePricing,
-  computeQuoteHash,
+  computeCanonicalQuoteFingerprint,
   getRuleSet,
-  DEFAULT_RULE_VERSION
+  defaultRulePolicyProvider
 } from '@northstar/rules';
 import { randomUUID } from 'node:crypto';
 
@@ -37,7 +37,7 @@ export function buildPricingServer(): { app: FastifyInstance; metrics: MetricsSt
     return {
       ready: true,
       uptimeSeconds: Math.floor((Date.now() - metrics.startTime) / 1000),
-      activeRuleVersion: DEFAULT_RULE_VERSION
+      activeRuleVersion: defaultRulePolicyProvider.getActiveRuleVersion()
     };
   });
 
@@ -50,7 +50,7 @@ export function buildPricingServer(): { app: FastifyInstance; metrics: MetricsSt
     };
   });
 
-  // Evaluate Eligibility
+  // Evaluate Eligibility (Server-Owned Rule Version)
   app.post('/api/v1/quote/evaluate', async (request, reply) => {
     metrics.totalEvaluations++;
     const parseResult = QuoteInputSchema.safeParse(request.body);
@@ -63,21 +63,20 @@ export function buildPricingServer(): { app: FastifyInstance; metrics: MetricsSt
       });
     }
 
-    const ruleVersion = (request.query as { ruleVersion?: string })?.ruleVersion || DEFAULT_RULE_VERSION;
+    const ruleVersion = defaultRulePolicyProvider.getActiveRuleVersion({ country: parseResult.data.country });
     const ruleSet = getRuleSet(ruleVersion);
     const eligibility = evaluateEligibility(parseResult.data, ruleSet);
 
     return reply.status(200).send(eligibility);
   });
 
-  // Calculate Deterministic Quote
+  // Calculate Deterministic Quote (Consent Required)
   app.post('/api/v1/quote/calculate', async (request, reply) => {
     metrics.totalCalculations++;
     const body = request.body as {
       sessionId?: string;
       input: unknown;
-      consent: unknown;
-      ruleVersion?: string;
+      consent?: unknown;
     };
 
     const inputParse = QuoteInputSchema.safeParse(body?.input);
@@ -99,7 +98,7 @@ export function buildPricingServer(): { app: FastifyInstance; metrics: MetricsSt
       });
     }
 
-    const ruleVersion = body?.ruleVersion || DEFAULT_RULE_VERSION;
+    const ruleVersion = defaultRulePolicyProvider.getActiveRuleVersion({ country: inputParse.data.country });
     const ruleSet = getRuleSet(ruleVersion);
     const eligibility = evaluateEligibility(inputParse.data, ruleSet);
 
@@ -112,7 +111,13 @@ export function buildPricingServer(): { app: FastifyInstance; metrics: MetricsSt
     }
 
     const pricing = calculatePricing(inputParse.data, ruleSet);
-    const quoteHash = computeQuoteHash(ruleSet.version, inputParse.data, pricing);
+    const quoteHash = computeCanonicalQuoteFingerprint({
+      ruleVersion: ruleSet.version,
+      input: inputParse.data,
+      pricing,
+      eligibility
+    });
+
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 

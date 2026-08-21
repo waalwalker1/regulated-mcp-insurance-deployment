@@ -4,4 +4,7 @@ export * from './v2.js';
 export * from './registry.js';
 export * from './eligibility.js';
 export * from './pricing.js';
+export * from './hasher.js';
+export * from './rule-policy.js';
+export * from './pricing-port.js';
 export * from './quote-generator.js';

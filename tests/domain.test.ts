@@ -66,6 +66,7 @@ describe('Funnel State Machine', () => {
       partialInput: {},
       historicalQuotes: [],
       correctionCount: 0,
+      version: 1,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + 3600000).toISOString(),

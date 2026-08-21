@@ -3,7 +3,9 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema
 } from '@modelcontextprotocol/sdk/types.js';
+import Fastify from 'fastify';
 import { FunnelEngine } from './funnel-engine.js';
+import { buildWaniwaniInsuranceFlow } from './waniwani-flow.js';
 import {
   SupportedCountrySchema,
   PropertyTypeSchema,
@@ -11,14 +13,17 @@ import {
   ConstructionYearBandSchema,
   FloorAreaBandSchema,
   CoverageTierSchema,
-  DeductibleOptionSchema
+  DeductibleOptionSchema,
+  CorrectionInputSchema
 } from '@northstar/domain';
 
 export function createNorthstarMcpServer(engine: FunnelEngine = new FunnelEngine()) {
+  const waniwaniFlow = buildWaniwaniInsuranceFlow();
+
   const server = new Server(
     {
       name: 'northstar-insurance-mcp',
-      version: '0.1.0'
+      version: '0.2.0'
     },
     {
       capabilities: {
@@ -30,61 +35,64 @@ export function createNorthstarMcpServer(engine: FunnelEngine = new FunnelEngine
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
       tools: [
+        // Primary Waniwani Compiled Flow Tool
         {
-          name: 'start_quote_session',
-          description: 'Initialize a new Northstar Home Insurance quote funnel session.',
+          name: waniwaniFlow.name,
+          description: waniwaniFlow.config.description,
           inputSchema: {
             type: 'object',
             properties: {
-              correlationId: {
-                type: 'string',
-                description: 'Optional external correlation ID for enterprise tracing'
-              }
+              country: { type: 'string', enum: ['FR', 'ES', 'PT', 'DE', 'IT'], description: 'European country code' },
+              postcode: { type: 'string', description: 'Postal code' },
+              propertyType: { type: 'string', enum: ['apartment', 'detached_house', 'semi_detached', 'terraced_house', 'villa'] },
+              occupancyType: { type: 'string', enum: ['owner_occupied', 'tenant', 'landlord'] },
+              constructionYearBand: { type: 'string', enum: ['pre_1970', '1970_1999', '2000_2015', 'post_2015'] },
+              floorAreaBand: { type: 'string', enum: ['under_50_sqm', '50_100_sqm', '101_150_sqm', '151_250_sqm', 'over_250_sqm'] },
+              claimsCount5Years: { type: 'integer', minimum: 0, maximum: 10 },
+              isPrimaryResidence: { type: 'boolean' },
+              coverageTier: { type: 'string', enum: ['essential', 'comfort', 'premium'] },
+              deductible: { type: 'integer', enum: [150, 300, 500, 1000] },
+              parametersConfirmed: { type: 'boolean' },
+              hasConsented: { type: 'boolean' },
+              contactEmail: { type: 'string' }
+            }
+          }
+        },
+        // Modular Operational & Admin Tools
+        {
+          name: 'start_quote_session',
+          description: '[Operational Tool] Initialize a new Northstar Home Insurance quote funnel session.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              correlationId: { type: 'string', description: 'Optional correlation ID' }
             }
           }
         },
         {
           name: 'submit_property_basics',
-          description: 'Submit basic property location and structural category.',
+          description: '[Operational Tool] Submit basic property location and structural category.',
           inputSchema: {
             type: 'object',
             properties: {
-              sessionId: { type: 'string', description: 'Active session ID' },
-              country: {
-                type: 'string',
-                enum: ['FR', 'ES', 'PT', 'DE', 'IT'],
-                description: 'Country code'
-              },
-              postcode: { type: 'string', description: 'Postal code' },
-              propertyType: {
-                type: 'string',
-                enum: ['apartment', 'detached_house', 'semi_detached', 'terraced_house', 'villa'],
-                description: 'Property type'
-              },
-              occupancyType: {
-                type: 'string',
-                enum: ['owner_occupied', 'tenant', 'landlord'],
-                description: 'Occupancy type'
-              }
+              sessionId: { type: 'string' },
+              country: { type: 'string', enum: ['FR', 'ES', 'PT', 'DE', 'IT'] },
+              postcode: { type: 'string' },
+              propertyType: { type: 'string', enum: ['apartment', 'detached_house', 'semi_detached', 'terraced_house', 'villa'] },
+              occupancyType: { type: 'string', enum: ['owner_occupied', 'tenant', 'landlord'] }
             },
             required: ['sessionId', 'country', 'postcode', 'propertyType', 'occupancyType']
           }
         },
         {
           name: 'submit_risk_factors',
-          description: 'Submit structural age, area, and claims loss history.',
+          description: '[Operational Tool] Submit structural age, area, and claims loss history.',
           inputSchema: {
             type: 'object',
             properties: {
               sessionId: { type: 'string' },
-              constructionYearBand: {
-                type: 'string',
-                enum: ['pre_1970', '1970_1999', '2000_2015', 'post_2015']
-              },
-              floorAreaBand: {
-                type: 'string',
-                enum: ['under_50_sqm', '50_100_sqm', '101_150_sqm', '151_250_sqm', 'over_250_sqm']
-              },
+              constructionYearBand: { type: 'string', enum: ['pre_1970', '1970_1999', '2000_2015', 'post_2015'] },
+              floorAreaBand: { type: 'string', enum: ['under_50_sqm', '50_100_sqm', '101_150_sqm', '151_250_sqm', 'over_250_sqm'] },
               isPrimaryResidence: { type: 'boolean' },
               claimsCount5Years: { type: 'integer', minimum: 0, maximum: 10 }
             },
@@ -93,33 +101,32 @@ export function createNorthstarMcpServer(engine: FunnelEngine = new FunnelEngine
         },
         {
           name: 'evaluate_eligibility',
-          description: 'Trigger server-side deterministic eligibility evaluation.',
+          description: '[Operational Tool] Trigger server-side deterministic eligibility evaluation.',
           inputSchema: {
             type: 'object',
             properties: {
-              sessionId: { type: 'string' },
-              ruleVersion: { type: 'string', description: 'Optional rule version' }
+              sessionId: { type: 'string' }
             },
             required: ['sessionId']
           }
         },
         {
           name: 'select_coverage',
-          description: 'Select desired coverage tier, deductible, and optional contact email.',
+          description: '[Operational Tool] Select desired coverage tier and deductible.',
           inputSchema: {
             type: 'object',
             properties: {
               sessionId: { type: 'string' },
               coverageTier: { type: 'string', enum: ['essential', 'comfort', 'premium'] },
               deductible: { type: 'integer', enum: [150, 300, 500, 1000] },
-              contactEmail: { type: 'string', description: 'Optional email for quote delivery' }
+              contactEmail: { type: 'string' }
             },
             required: ['sessionId']
           }
         },
         {
           name: 'confirm_quote_parameters',
-          description: 'Confirm that all entered quote details are accurate before consent.',
+          description: '[Operational Tool] Confirm entered quote parameters before consent.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -131,7 +138,7 @@ export function createNorthstarMcpServer(engine: FunnelEngine = new FunnelEngine
         },
         {
           name: 'submit_consent',
-          description: 'Submit explicit mandatory data processing consent for quote calculation.',
+          description: '[Operational Tool] Submit explicit mandatory data processing consent.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -143,39 +150,43 @@ export function createNorthstarMcpServer(engine: FunnelEngine = new FunnelEngine
         },
         {
           name: 'calculate_quote',
-          description: 'Calculate official deterministic indicative quote (Consent required).',
+          description: '[Operational Tool] Calculate official deterministic quote (Consent required, server-owned rule version).',
           inputSchema: {
             type: 'object',
             properties: {
               sessionId: { type: 'string' },
-              ruleVersion: { type: 'string' }
+              idempotencyKey: { type: 'string' }
             },
             required: ['sessionId']
           }
         },
         {
           name: 'adjust_quote',
-          description: 'Adjust coverage tier or deductible on an already active quote.',
+          description: '[Operational Tool] Adjust coverage tier or deductible on active quote.',
           inputSchema: {
             type: 'object',
             properties: {
               sessionId: { type: 'string' },
               coverageTier: { type: 'string', enum: ['essential', 'comfort', 'premium'] },
-              deductible: { type: 'integer', enum: [150, 300, 500, 1000] }
+              deductible: { type: 'integer', enum: [150, 300, 500, 1000] },
+              idempotencyKey: { type: 'string' }
             },
             required: ['sessionId']
           }
         },
         {
           name: 'correct_field',
-          description: 'Correct an previously declared parameter and recalculate funnel state.',
+          description: '[Operational Tool] Strictly correct declared parameters and recalculate state.',
           inputSchema: {
             type: 'object',
             properties: {
               sessionId: { type: 'string' },
               country: { type: 'string', enum: ['FR', 'ES', 'PT', 'DE', 'IT'] },
               postcode: { type: 'string' },
-              propertyType: { type: 'string' },
+              propertyType: { type: 'string', enum: ['apartment', 'detached_house', 'semi_detached', 'terraced_house', 'villa'] },
+              occupancyType: { type: 'string', enum: ['owner_occupied', 'tenant', 'landlord'] },
+              constructionYearBand: { type: 'string', enum: ['pre_1970', '1970_1999', '2000_2015', 'post_2015'] },
+              floorAreaBand: { type: 'string', enum: ['under_50_sqm', '50_100_sqm', '101_150_sqm', '151_250_sqm', 'over_250_sqm'] },
               claimsCount5Years: { type: 'integer' }
             },
             required: ['sessionId']
@@ -183,7 +194,7 @@ export function createNorthstarMcpServer(engine: FunnelEngine = new FunnelEngine
         },
         {
           name: 'get_quote_status',
-          description: 'Retrieve current session status and active quote details.',
+          description: '[Operational Tool] Retrieve current session status and active quote.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -194,7 +205,7 @@ export function createNorthstarMcpServer(engine: FunnelEngine = new FunnelEngine
         },
         {
           name: 'export_audit_trail',
-          description: 'Export verifiable audit trail with cryptographic hash verification.',
+          description: '[Operational Tool] Export verifiable audit trail with SHA-256 chain verification.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -207,10 +218,14 @@ export function createNorthstarMcpServer(engine: FunnelEngine = new FunnelEngine
     };
   });
 
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
     const { name, arguments: args } = request.params;
 
     try {
+      if (name === waniwaniFlow.name) {
+        return await waniwaniFlow.handler(args as Record<string, unknown>, extra);
+      }
+
       switch (name) {
         case 'start_quote_session': {
           const session = await engine.startSession((args as any)?.correlationId);
@@ -276,7 +291,7 @@ export function createNorthstarMcpServer(engine: FunnelEngine = new FunnelEngine
         }
 
         case 'evaluate_eligibility': {
-          const session = await engine.evaluateEligibility((args as any).sessionId, (args as any)?.ruleVersion);
+          const session = await engine.evaluateEligibility((args as any).sessionId);
           return {
             content: [
               {
@@ -347,7 +362,9 @@ export function createNorthstarMcpServer(engine: FunnelEngine = new FunnelEngine
         }
 
         case 'calculate_quote': {
-          const quote = await engine.calculateQuote((args as any).sessionId, (args as any)?.ruleVersion);
+          const quote = await engine.calculateQuote((args as any).sessionId, {
+            idempotencyKey: (args as any)?.idempotencyKey
+          });
           return {
             content: [
               {
@@ -364,7 +381,8 @@ export function createNorthstarMcpServer(engine: FunnelEngine = new FunnelEngine
         case 'adjust_quote': {
           const adjusted = await engine.adjustQuote((args as any).sessionId, {
             coverageTier: (args as any)?.coverageTier ? CoverageTierSchema.parse((args as any).coverageTier) : undefined,
-            deductible: (args as any)?.deductible ? DeductibleOptionSchema.parse((args as any).deductible) : undefined
+            deductible: (args as any)?.deductible ? DeductibleOptionSchema.parse((args as any).deductible) : undefined,
+            idempotencyKey: (args as any)?.idempotencyKey
           });
           return {
             content: [
@@ -382,7 +400,8 @@ export function createNorthstarMcpServer(engine: FunnelEngine = new FunnelEngine
         case 'correct_field': {
           const delta = { ...args };
           delete (delta as any).sessionId;
-          const session = await engine.correctField((args as any).sessionId, delta);
+          const validatedDelta = CorrectionInputSchema.parse(delta);
+          const session = await engine.correctField((args as any).sessionId, validatedDelta);
           return {
             content: [
               {
@@ -446,4 +465,35 @@ export function createNorthstarMcpServer(engine: FunnelEngine = new FunnelEngine
   });
 
   return server;
+}
+
+/**
+ * Start HTTP MCP Server if MCP_TRANSPORT=http
+ */
+export async function startHttpMcpServer(port: number = Number(process.env.MCP_PORT ?? 3000)) {
+  const app = Fastify({ logger: false });
+  const engine = new FunnelEngine();
+  const server = createNorthstarMcpServer(engine);
+
+  app.get('/health', async () => ({ status: 'healthy', transport: 'http', uptime: process.uptime() }));
+  app.get('/ready', async () => ({ status: 'ready', server: 'northstar-insurance-mcp', version: '0.2.0' }));
+
+  app.post('/mcp', async (req, reply) => {
+    const body = req.body as any;
+    if (body?.method === 'tools/list') {
+      const listHandler = (server as any)._requestHandlers?.get('tools/list');
+      const res = await listHandler(body, {});
+      return reply.send(res);
+    }
+    if (body?.method === 'tools/call') {
+      const callHandler = (server as any)._requestHandlers?.get('tools/call');
+      const res = await callHandler(body, {});
+      return reply.send(res);
+    }
+    return reply.status(400).send({ error: 'Unsupported MCP method over HTTP bridge' });
+  });
+
+  await app.listen({ port, host: '0.0.0.0' });
+  console.log(`[Northstar MCP Server] Listening over HTTP on port ${port}`);
+  return app;
 }

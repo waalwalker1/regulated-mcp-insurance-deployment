@@ -70,16 +70,16 @@ export const PostcodeRegexMap: Record<SupportedCountry, RegExp> = {
  */
 export const BaseQuoteInputSchema = z.object({
   country: SupportedCountrySchema,
-  postcode: z.string().trim().min(3).max(10),
-  propertyType: PropertyTypeSchema,
-  occupancyType: OccupancyTypeSchema,
-  constructionYearBand: ConstructionYearBandSchema,
-  floorAreaBand: FloorAreaBandSchema,
-  isPrimaryResidence: z.boolean(),
-  claimsCount5Years: z.number().int().min(0).max(10),
-  coverageTier: CoverageTierSchema.default('comfort'),
-  deductible: DeductibleOptionSchema.default(300),
-  contactEmail: z.string().email().optional()
+  postcode: z.string().trim().min(3).max(10).describe('Postal code matching country format'),
+  propertyType: PropertyTypeSchema.describe('Property classification'),
+  occupancyType: OccupancyTypeSchema.describe('Owner, tenant, or landlord occupancy'),
+  constructionYearBand: ConstructionYearBandSchema.describe('Era of property construction'),
+  floorAreaBand: FloorAreaBandSchema.describe('Floor surface area band'),
+  isPrimaryResidence: z.boolean().describe('Whether this is the primary residence'),
+  claimsCount5Years: z.number().int().min(0).max(10).describe('Total claims made in last 5 years'),
+  coverageTier: CoverageTierSchema.default('comfort').describe('Desired insurance coverage tier'),
+  deductible: DeductibleOptionSchema.default(300).describe('Chosen out-of-pocket deductible in EUR'),
+  contactEmail: z.string().email().optional().describe('Optional contact email for quote delivery')
 });
 
 /**
@@ -102,6 +102,12 @@ export type QuoteInput = z.infer<typeof QuoteInputSchema>;
  */
 export const PartialQuoteInputSchema = BaseQuoteInputSchema.partial();
 export type PartialQuoteInput = z.infer<typeof PartialQuoteInputSchema>;
+
+/**
+ * Strict Correction Input Schema - disallows unknown fields and restricts to valid partial keys
+ */
+export const CorrectionInputSchema = BaseQuoteInputSchema.partial().strict();
+export type CorrectionInput = z.infer<typeof CorrectionInputSchema>;
 
 /**
  * Explicit Consent Schema
@@ -170,3 +176,4 @@ export const GeneratedQuoteSchema = z.object({
   status: z.enum(['active', 'adjusted', 'expired', 'referred'])
 });
 export type GeneratedQuote = z.infer<typeof GeneratedQuoteSchema>;
+export type IndicativeQuote = GeneratedQuote;

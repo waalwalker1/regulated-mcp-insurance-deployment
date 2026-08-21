@@ -8,8 +8,23 @@ on:
 
 jobs:
   build-and-verify:
-    name: Build & Verify Release Gates
+    name: Build, Test & Release Quality Gates
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: northstar_insurance
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout Repository
@@ -22,19 +37,33 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci
+
+      - name: Verify Zero Local File URIs
+        run: |
+          if grep -rn "file:///Users/" docs/ README.md packages/ apps/ tests/ scripts/; then
+            echo "ERROR: Forbidden absolute local file:///Users/ URLs detected!"
+            exit 1
+          fi
 
       - name: Typecheck TypeScript Monorepo
         run: npm run typecheck
 
-      - name: Run Unit & Integration Tests
+      - name: Run Database Migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/northstar_insurance
+        run: npm run db:migrate
+
+      - name: Run Complete Test Suite (Unit, Protocol, Property, Adversarial, Integration)
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/northstar_insurance
         run: npm run test
 
       - name: Run 24-Scenario Evaluation Benchmark
         run: npm run eval
 
+      - name: Run Local Zero-Credential Demonstration
+        run: npm run demo
+
       - name: Run Security Audit
         run: npm run security
-
-      - name: Run Local Demonstration
-        run: npm run demo

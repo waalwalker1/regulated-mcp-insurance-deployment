@@ -8,4 +8,4 @@
 ---
 
 ## 2. Secret Redaction Pipeline
-The audit store redactor ([`packages/audit/src/redactor.ts`](file:///Users/dhananjay/Library/CloudStorage/OneDrive-URV/Personal%20Docs/CV/GitHub_Projects_JOB/WaniWani/packages/audit/src/redactor.ts)) intercepts all metadata objects and masks strings matching `password`, `secret`, `token`, `apiKey`, `creditCard`, or `ssn` with `[REDACTED]`.
+The audit store redactor ([`packages/audit/src/redactor.ts`](../../packages/audit/src/redactor.ts)) intercepts all metadata objects and masks strings matching `password`, `secret`, `token`, `apiKey`, `creditCard`, or `ssn` with `[REDACTED]`.

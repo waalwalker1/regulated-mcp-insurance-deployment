@@ -1,79 +1,112 @@
-import type { FunnelSession } from '@northstar/domain';
-import type { SessionStore } from './store.interface.js';
+import { randomUUID } from 'node:crypto';
+import type { FunnelSession, IndicativeQuote } from '@northstar/domain';
+import type { SessionStore, IdempotencyRecord } from './store.interface.js';
 
 export class InMemorySessionStore implements SessionStore {
-  private sessions = new Map<string, FunnelSession>();
+  private readonly sessions = new Map<string, { session: FunnelSession; expiresAtEpoch: number }>();
+  private readonly quotes = new Map<string, IndicativeQuote[]>();
+  private readonly idempotencyRecords = new Map<string, { record: IdempotencyRecord; expiresAtEpoch: number }>();
+
+  constructor(private readonly defaultTtlSeconds: number = 3600) {}
 
   async createSession(
-    sessionId: string,
-    correlationId: string,
-    ttlSeconds: number = 3600
+    sessionId: string = randomUUID(),
+    correlationId: string = randomUUID(),
+    ttlSeconds: number = this.defaultTtlSeconds
   ): Promise<FunnelSession> {
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + ttlSeconds * 1000).toISOString();
+    const expiresAtEpoch = Date.now() + ttlSeconds * 1000;
+    const expiresAt = new Date(expiresAtEpoch).toISOString();
 
     const session: FunnelSession = {
       sessionId,
+      correlationId,
       step: 'INIT',
       partialInput: {},
       historicalQuotes: [],
       correctionCount: 0,
+      version: 1,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
-      expiresAt,
-      correlationId
+      expiresAt
     };
 
-    this.sessions.set(sessionId, structuredClone(session));
-    return session;
+    this.sessions.set(sessionId, { session, expiresAtEpoch });
+    return JSON.parse(JSON.stringify(session)) as FunnelSession;
+  }
+
+  async saveSession(session: FunnelSession): Promise<void> {
+    const expiresAtDate = new Date(session.expiresAt);
+    const expiresAtEpoch = isNaN(expiresAtDate.getTime())
+      ? Date.now() + this.defaultTtlSeconds * 1000
+      : expiresAtDate.getTime();
+
+    // Deep clone to prevent direct object reference mutation bugs
+    const cloned = JSON.parse(JSON.stringify(session)) as FunnelSession;
+    this.sessions.set(session.sessionId, { session: cloned, expiresAtEpoch });
   }
 
   async getSession(sessionId: string): Promise<FunnelSession | null> {
-    const session = this.sessions.get(sessionId);
-    if (!session) return null;
+    const entry = this.sessions.get(sessionId);
+    if (!entry) return null;
 
-    // Check expiry
-    if (new Date(session.expiresAt).getTime() < Date.now()) {
+    if (Date.now() > entry.expiresAtEpoch) {
       this.sessions.delete(sessionId);
       return null;
     }
 
-    return structuredClone(session);
-  }
-
-  async saveSession(session: FunnelSession): Promise<void> {
-    session.updatedAt = new Date().toISOString();
-    this.sessions.set(session.sessionId, structuredClone(session));
+    return JSON.parse(JSON.stringify(entry.session)) as FunnelSession;
   }
 
   async deleteSession(sessionId: string): Promise<boolean> {
-    return this.sessions.delete(sessionId);
+    const existed = this.sessions.delete(sessionId);
+    this.quotes.delete(sessionId);
+    return existed;
+  }
+
+  async saveQuote(quote: IndicativeQuote): Promise<void> {
+    const list = this.quotes.get(quote.sessionId) ?? [];
+    list.push(JSON.parse(JSON.stringify(quote)) as IndicativeQuote);
+    this.quotes.set(quote.sessionId, list);
+  }
+
+  async getQuoteHistory(sessionId: string): Promise<IndicativeQuote[]> {
+    const list = this.quotes.get(sessionId) ?? [];
+    return JSON.parse(JSON.stringify(list)) as IndicativeQuote[];
+  }
+
+  async getIdempotencyRecord(key: string): Promise<IdempotencyRecord | null> {
+    const entry = this.idempotencyRecords.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expiresAtEpoch) {
+      this.idempotencyRecords.delete(key);
+      return null;
+    }
+    return JSON.parse(JSON.stringify(entry.record)) as IdempotencyRecord;
+  }
+
+  async saveIdempotencyRecord(record: IdempotencyRecord): Promise<void> {
+    const expiresAtEpoch = new Date(record.expiresAt).getTime();
+    this.idempotencyRecords.set(record.idempotencyKey, {
+      record: JSON.parse(JSON.stringify(record)) as IdempotencyRecord,
+      expiresAtEpoch: isNaN(expiresAtEpoch) ? Date.now() + 86400 * 1000 : expiresAtEpoch
+    });
   }
 
   async cleanExpiredSessions(): Promise<number> {
     const now = Date.now();
     let count = 0;
-    for (const [id, session] of this.sessions.entries()) {
-      if (new Date(session.expiresAt).getTime() < now) {
+    for (const [id, entry] of this.sessions.entries()) {
+      if (now > entry.expiresAtEpoch) {
         this.sessions.delete(id);
         count++;
       }
     }
-    return count;
-  }
-
-  async listSessions(): Promise<FunnelSession[]> {
-    const now = Date.now();
-    const valid: FunnelSession[] = [];
-    for (const session of this.sessions.values()) {
-      if (new Date(session.expiresAt).getTime() >= now) {
-        valid.push(structuredClone(session));
+    for (const [key, entry] of this.idempotencyRecords.entries()) {
+      if (now > entry.expiresAtEpoch) {
+        this.idempotencyRecords.delete(key);
       }
     }
-    return valid;
-  }
-
-  async close(): Promise<void> {
-    this.sessions.clear();
+    return count;
   }
 }
