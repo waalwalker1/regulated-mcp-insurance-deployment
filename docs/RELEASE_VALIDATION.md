@@ -8,25 +8,27 @@
 
 ## 1. Quality Gates & Test Verification
 
-| Area                           | Status | Measurement Tool             | Scope / Details                                                   |
-| ------------------------------ | ------ | ---------------------------- | ----------------------------------------------------------------- |
-| **Code Formatting**            | PASS   | `prettier --check`           | Strict formatting across TypeScript, JSON, and Markdown           |
-| **Static Code Analysis**       | PASS   | `eslint`                     | Monorepo linting via `@typescript-eslint/parser` (0 errors)       |
-| **Type Safety**                | PASS   | `tsc --noEmit`               | Strict mode TypeScript across all packages and apps (0 errors)    |
-| **Build Compilation**          | PASS   | `tsc -b`                     | Clean project references build into `dist/`                       |
-| **Unit & Property Tests**      | PASS   | `vitest run`                 | 26 test files, 76 test cases (100% passing)                       |
-| **Protocol Integration**       | PASS   | `vitest run tests/protocol/` | In-memory and Streamable HTTP client-server MCP validation        |
-| **Evaluation Benchmark**       | PASS   | `tsx scripts/run-eval.ts`    | 24 multi-country scenario evals (100% passing in ~8ms in-process) |
-| **Security & Vulnerabilities** | PASS   | `npm audit`                  | 0 high or critical dependency vulnerabilities                     |
-| **Cryptographic Audit**        | PASS   | SHA-256 Chaining             | 100% unbroken event hash chains from session genesis              |
-| **Documentation Links**        | PASS   | Markdown link validator      | 0 broken relative links; 0 local file URLs                        |
+| Area                           | Status | Measurement Tool                | Scope / Details                                                 |
+| ------------------------------ | ------ | ------------------------------- | --------------------------------------------------------------- |
+| **Code Formatting**            | PASS   | `prettier --check`              | Strict formatting across TypeScript, JSON, and Markdown         |
+| **Static Code Analysis**       | PASS   | `eslint`                        | Monorepo linting via `@typescript-eslint/parser` (0 errors)     |
+| **Type Safety**                | PASS   | `tsc --noEmit`                  | Strict mode TypeScript across all packages and apps (0 errors)  |
+| **Build Compilation**          | PASS   | `tsc -b`                        | Clean project references build into `dist/`                     |
+| **Unit & Property Tests**      | PASS   | `vitest run`                    | 26 test files, 76 test cases (100% passing)                     |
+| **Protocol Integration**       | PASS   | `vitest run tests/protocol/`    | In-memory and Streamable HTTP client-server MCP validation      |
+| **PostgreSQL Integration**     | PASS   | `vitest run tests/integration/` | Live PostgreSQL persistence, flow state, OCC, and anonymization |
+| **Docker Compose Smoke**       | PASS   | `scripts/docker-mcp-smoke.ts`   | Containerized health, readiness, and Streamable HTTP MCP smoke  |
+| **Evaluation Benchmark**       | PASS   | `tsx scripts/run-eval.ts`       | 24 multi-country scenario evals (100% passing)                  |
+| **Security & Vulnerabilities** | PASS   | `npm audit`                     | 0 high or critical dependency vulnerabilities                   |
+| **Cryptographic Audit**        | PASS   | SHA-256 Chaining                | 100% unbroken event hash chains from session genesis            |
+| **Documentation Links**        | PASS   | Markdown link validator         | 0 broken relative links; 0 local file URLs                      |
 
 ---
 
 ## 2. Verified Capabilities
 
-- **Server-Side Pricing Authority:** Actuarial formulas, multipliers, and tax levies are calculated deterministically by server code. The LLM cannot mutate or override pricing.
-- **Typed Resumable Flow:** `@waniwani/sdk/mcp` state graph (`createFlow`, `interrupt`) compiled as one primary MCP tool (`get_home_insurance_quote`).
+- **Server-Side Pricing Authority:** Actuarial formulas, multipliers, and tax levies are calculated deterministically by compiled server code. The conversational interface cannot mutate or override pricing.
+- **Typed Resumable Flow:** `@waniwani/sdk/mcp` flow graph (`createFlow`, `interrupt`) compiled as one primary MCP tool (`get_home_insurance_quote`).
 - **PostgreSQL Flow & Session Persistence:** `PostgresSessionStore` and `PostgresWaniwaniKvStore` survive process restarts with optimistic concurrency control.
 - **Data Anonymization Workflow:** Scrubs personal contact information across active sessions and historical quote tables while preserving cryptographic audit validity.
 - **HTTP Microservice Parity:** `PricingPort` contract maintains 100% pricing parity between in-process functions and remote REST calls.
@@ -39,4 +41,6 @@
 1. **Synthetic Reference Insurer:** Northstar Home Insurance EU is a synthetic reference model for demonstration and educational purposes.
 2. **Non-Binding Quotations:** Quotations generated by this system are non-binding estimates and do not bind formal underwriting policies or collect financial payment.
 3. **Illustrative Actuarial Factors:** Pricing formulas and risk multipliers in `packages/rules/src/v1.ts` are demonstration values and do not represent proprietary actuarial tables.
-4. **Evaluation Benchmark Context:** Reported ~8ms execution time reflects in-process test evaluation runner execution, not a production network latency SLA.
+4. **Evaluation Benchmark Context:** In-process test evaluation runner timing is not a production network latency SLA.
+5. **Hash-Chain Audit Boundary:** The SHA-256 audit log is tamper-evident and detects modification, insertion, or reordering within the retained sequence; detecting tail-deletion requires an externally stored final event hash, count, or terminal checkpoint.
+6. **Regulatory Reference Boundary:** This reference architecture illustrates engineering controls and does not constitute formal legal certification, DPIA approval, or SOC 2 accreditation.

@@ -599,7 +599,7 @@ async function runEvaluationSuite() {
       readB?.partialInput.country === "DE";
     results.push({
       id: "SCN-014",
-      name: "Multi-Tenant Session Isolation",
+      name: "Concurrent Session Isolation",
       category: "SECURITY_ADVERSARIAL",
       passed,
       expected: "Complete state segregation between concurrent sessions",

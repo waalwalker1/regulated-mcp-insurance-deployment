@@ -6,12 +6,12 @@
 
 ## 1. Executive Summary
 
-Modern enterprise insurers face an architectural dilemma: conversational AI assistants offer superior conversion and customer engagement, but financial regulations (e.g. EU AI Act, Solvency II, GDPR, and insurance conduct standards) strictly forbid unvetted, nondeterministic price setting or non-auditable eligibility decisions.
+Modern enterprise insurers face an architectural challenge: conversational AI assistants offer superior engagement and customer experience, but regulated insurance workflows require strong governance around pricing logic, data processing, customer disclosures, decision traceability, and auditability. The exact legal and regulatory obligations depend on the insurer's role, jurisdiction, lawful basis, processing purpose, product type, and compliance framework.
 
-The **Northstar Regulated MCP Insurance Deployment Kit** solves this dilemma by introducing a **deterministic Model Context Protocol (MCP) gateway architecture**. In this model:
+The **Northstar Regulated MCP Insurance Deployment Kit** demonstrates a reference implementation of a **deterministic Model Context Protocol (MCP) gateway architecture**. In this model:
 
 - The **AI assistant** handles natural language extraction, conversational re-asking, and user guidance.
-- The **deterministic backend engine** owns all state progression, input schema validation, actuarial multiplier calculations, GDPR consent enforcement, and tamper-evident audit logging.
+- The **compiled server** owns all state progression, input schema validation, actuarial multiplier calculations, consent gating, and tamper-evident audit logging.
 
 ```text
 ┌─────────────────────────┐       ┌────────────────────────────────────────────────────────┐
@@ -27,12 +27,12 @@ The **Northstar Regulated MCP Insurance Deployment Kit** solves this dilemma by 
 
 ## 2. Business Problem & Solution Impact
 
-| Enterprise Challenge           | Traditional LLM Risk                                                   | Northstar MCP Kit Solution                                                                                  |
-| ------------------------------ | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Pricing Hallucination**      | LLMs hallucinate premiums, leading to legal dispute or underpricing.   | **Zero LLM Pricing Authority.** Pure mathematical formulas execute server-side; LLM cannot mutate premiums. |
-| **Regulatory Non-Compliance**  | Quotes generated without explicit consent violate GDPR Article 6 & 7.  | **Mandatory Consent Gate.** Server refuses quote calculation until cryptographic consent is verified.       |
-| **Auditing & Non-Repudiation** | Black-box LLM interactions cannot be reconstructed for regulators.     | **Append-Only SHA-256 Hash Chain.** Every interaction generates a tamper-evident audit event log.           |
-| **Data Residency Fears**       | Sensitive personal identifiers sent to third-party US cloud providers. | **Total Data Minimization.** Anonymous quoting; zero PII needed until optional quote delivery boundary.     |
+| Enterprise Challenge          | Traditional LLM Risk                                                   | Northstar MCP Kit Solution                                                                                                                 |
+| ----------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Pricing Hallucination**     | LLMs hallucinate premiums, leading to inconsistent rates.              | **Zero LLM Pricing Authority.** Pure mathematical formulas execute server-side; LLM cannot mutate premiums.                                |
+| **Data Protection & Consent** | Uncontrolled conversational quoting without auditable consent records. | **Workflow Consent Invariant.** Reference workflow enforces explicit consent before quote calculation as an auditable control invariant.   |
+| **Audit Traceability**        | Black-box LLM interactions cannot be reconstructed for compliance.     | **Append-Only SHA-256 Hash Chain.** Every interaction generates a tamper-evident audit log verifying sequence integrity.                   |
+| **Data Minimization**         | Unstructured conversational data containing unnecessary PII.           | **Structured Minimization.** Anonymous quoting workflow; contact details are optional and isolated until post-consent delivery boundaries. |
 
 ---
 

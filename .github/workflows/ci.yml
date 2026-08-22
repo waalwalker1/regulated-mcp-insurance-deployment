@@ -123,3 +123,35 @@ jobs:
 
       - name: Run Security Audit
         run: npm run security
+
+      - name: Build Docker Compose Stack
+        run: docker compose build
+
+      - name: Start Docker Compose Stack
+        env:
+          POSTGRES_PORT: 5433
+        run: docker compose up -d
+
+      - name: Wait for Docker Services Health
+        run: |
+          for i in {1..30}; do
+            if curl -s --fail http://localhost:3000/health && curl -s --fail http://localhost:3001/health; then
+              echo "Docker services healthy and responsive."
+              break
+            fi
+            echo "Waiting for services to become healthy (attempt $i/30)..."
+            sleep 2
+          done
+          curl --fail http://localhost:3000/health
+          curl --fail http://localhost:3000/ready
+          curl --fail http://localhost:3001/health
+          curl --fail http://localhost:3001/ready
+
+      - name: Execute Containerized MCP Streamable HTTP Smoke Test
+        run: npx tsx scripts/docker-mcp-smoke.ts
+
+      - name: Stop and Clean Docker Stack
+        if: always()
+        run: |
+          docker compose logs
+          docker compose down -v

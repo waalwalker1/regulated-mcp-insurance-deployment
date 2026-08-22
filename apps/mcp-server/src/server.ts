@@ -6,6 +6,7 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import Fastify from "fastify";
+import { VERSION } from "./version.js";
 import { FunnelEngine } from "./funnel-engine.js";
 import { buildWaniwaniInsuranceFlow } from "./waniwani-flow.js";
 import { createWaniwaniFlowStore } from "@northstar/persistence";
@@ -32,7 +33,7 @@ export function createNorthstarMcpServer(
   const server = new Server(
     {
       name: "northstar-insurance-mcp",
-      version: "0.2.0",
+      version: VERSION,
     },
     {
       capabilities: {
@@ -732,7 +733,7 @@ export async function startHttpMcpServer(
   app.get("/ready", async () => ({
     status: "ready",
     server: "northstar-insurance-mcp",
-    version: "0.2.0",
+    version: VERSION,
   }));
 
   app.all("/mcp", async (req, reply) => {

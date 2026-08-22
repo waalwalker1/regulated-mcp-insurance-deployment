@@ -16,15 +16,15 @@ flowchart TD
 
 ### Persistence Features
 
-- **Session Isolation:** Every session is keyed by an unguessable UUID. Tenant cross-talk is prevented.
+- **Session Isolation:** Every session is keyed by an unguessable UUID. Cross-session state leakage is prevented.
 - **Time-to-Live (TTL):** Sessions expire after a configurable duration (default: 3600 seconds). Expired sessions cannot be accessed or modified.
-- **Right-to-Erasure:** Individual sessions can be scrubbed on demand via [`scripts/anonymize-session.ts`](../../scripts/anonymize-session.ts).
+- **Contact-Data Anonymization:** Individual sessions and historical snapshots can be scrubbed of personal contact data on demand via [`scripts/anonymize-session.ts`](../../scripts/anonymize-session.ts).
 
 ---
 
 ## 2. Append-Only Application Audit Trail
 
-Every interaction, field input, rejection, calculation, and consent grant emits an immutable `AuditEvent`.
+Every interaction, field input, rejection, calculation, and consent grant emits an append-only `AuditEvent` at the application layer.
 
 ### Hash Chain Mechanics
 
@@ -42,9 +42,11 @@ flowchart LR
     E3 --> E4["quote.calculated<br/>Hash: 9e4f..."]
 ```
 
-### Verification
+### Verification & Tamper-Evidence
 
-The `verifyChainIntegrity(sessionId)` method traverses the event log from genesis, re-computing each SHA-256 hash. Any retroactive mutation or truncation of the log results in an immediate verification failure.
+The `verifyChainIntegrity(sessionId)` method traverses the event log from genesis, re-computing each SHA-256 hash. Any retroactive mutation, insertion, or reordering within the sequence results in an immediate verification failure.
+
+_Limitation:_ A valid prefix of the chain can still verify after deletion of trailing events unless a trusted external terminal checkpoint, event count, or independently stored final hash is retained. The audit log is therefore described as tamper-evident rather than tamper-proof or immutable.
 
 ### PII Minimization in Audit Logs
 

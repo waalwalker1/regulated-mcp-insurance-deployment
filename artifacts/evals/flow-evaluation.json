@@ -1,11 +1,11 @@
 {
   "benchmarkDate": "2026-08-21",
-  "timestamp": "2026-08-22T08:39:24.939Z",
+  "timestamp": "2026-08-22T09:32:21.575Z",
   "totalScenarios": 24,
   "passedScenarios": 24,
   "failedScenarios": 0,
   "successRatePercent": 100,
-  "totalDurationMs": 8,
+  "totalDurationMs": 11,
   "results": [
     {
       "id": "SCN-001",
@@ -23,7 +23,7 @@
       "passed": true,
       "expected": "Calculated Spain premium with 14% tax",
       "actual": "€267.9 with 14.000000000000002% tax",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-003",
@@ -32,7 +32,7 @@
       "passed": true,
       "expected": "Calculated tenant discount premium in Portugal",
       "actual": "€57.5",
-      "latencyMs": 0
+      "latencyMs": 1
     },
     {
       "id": "SCN-004",
@@ -41,7 +41,7 @@
       "passed": true,
       "expected": "German 19% tax rate and premium tier multipliers",
       "actual": "€428.1 (19% tax)",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-005",
@@ -50,7 +50,7 @@
       "passed": true,
       "expected": "Italian 21% tax rate and villa 1.6x multiplier",
       "actual": "€432.33 (21% tax, x1.6 property multiplier)",
-      "latencyMs": 0
+      "latencyMs": 1
     },
     {
       "id": "SCN-006",
@@ -59,7 +59,7 @@
       "passed": true,
       "expected": "REFERRED step with CLAIMS_THRESHOLD_EXCEEDED reason code",
       "actual": "Step REFERRED, reason: CLAIMS_THRESHOLD_EXCEEDED",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-007",
@@ -77,7 +77,7 @@
       "passed": true,
       "expected": "Server throws [CONSENT_REQUIRED] exception",
       "actual": "Server threw [CONSENT_REQUIRED] exception",
-      "latencyMs": 1
+      "latencyMs": 3
     },
     {
       "id": "SCN-009",
@@ -95,7 +95,7 @@
       "passed": true,
       "expected": "Active quote invalidated, step reverted to COLLECTING_PROPERTY, correction count incremented",
       "actual": "Active quote: undefined, Step: COLLECTING_PROPERTY, Corrections: 1",
-      "latencyMs": 0
+      "latencyMs": 1
     },
     {
       "id": "SCN-011",
@@ -126,7 +126,7 @@
     },
     {
       "id": "SCN-014",
-      "name": "Multi-Tenant Session Isolation",
+      "name": "Concurrent Session Isolation",
       "category": "SECURITY_ADVERSARIAL",
       "passed": true,
       "expected": "Complete state segregation between concurrent sessions",

@@ -25,5 +25,5 @@
 | ---------------------------------------- | -------- | ------------------------------------------------------------------------------ | ------------- |
 | Unlawful data processing without consent | HIGH     | Server-side consent gate throws `[CONSENT_REQUIRED]` if consent is absent      | LOW           |
 | PII exposure in system logs              | MEDIUM   | Automated redactor masks email addresses before audit log persistence          | LOW           |
-| Cross-tenant session data leakage        | HIGH     | UUID-keyed session store with strict tenant isolation                          | LOW           |
+| Cross-session state data leakage         | HIGH     | UUID-keyed session store with concurrent session state isolation               | LOW           |
 | Tampering with audit logs                | MEDIUM   | SHA-256 cryptographic hash chaining prevents undetected retroactive alteration | LOW           |

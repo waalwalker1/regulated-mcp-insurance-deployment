@@ -2,11 +2,12 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 COPY package*.json ./
+COPY .npmrc ./
 COPY packages/ ./packages/
 COPY apps/pricing-service/ ./apps/pricing-service/
 COPY tsconfig.json ./
 
-RUN npm install --legacy-peer-deps
+RUN npm ci
 
 FROM node:20-alpine AS runner
 WORKDIR /app

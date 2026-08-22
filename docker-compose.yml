@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: northstar_dev_pass
       POSTGRES_DB: northstar_quotes
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:

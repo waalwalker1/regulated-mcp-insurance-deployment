@@ -65,12 +65,14 @@ Sample output:
 
 ---
 
-## 4. GDPR Article 17 Right to Erasure / Anonymization
+## 4. Session Contact-Data Anonymization
 
-To scrub PII (contact email addresses) from a session while preserving the cryptographic audit chain:
+To scrub personal contact email addresses from active session state and historical quote snapshots while preserving the cryptographic audit chain:
 
 ```bash
 npx tsx scripts/anonymize-session.ts <sessionId>
 ```
 
-This updates the persistent record, appends a `session.anonymized` audit event, and confirms hash integrity.
+This updates the persistent records in `quote_sessions` and `quote_history`, appends a `session.anonymized` audit event, and confirms hash integrity.
+
+> **Note:** This utility demonstrates technical scrubbing of configured personal fields. It is not a substitute for an organization's legal erasure, retention, archival, or audit policy.

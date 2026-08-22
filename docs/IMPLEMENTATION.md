@@ -1,6 +1,6 @@
 # Technical Implementation Summary
 
-**Reference Version:** `v0.3.0`  
+**Reference Version:** `v0.3.1`  
 **Architecture:** Model Context Protocol (MCP) Deterministic Quotation Funnel  
 **Target Domain:** Regulated European Residential Insurance
 
