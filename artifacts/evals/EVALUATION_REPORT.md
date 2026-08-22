@@ -12,17 +12,17 @@
 | **SCN-001** | France Apartment Standard Quote | `HAPPY_PATH` | ✅ PASS | €161.66 annual premium, active status | €161.66 annual premium, active status | 3ms |
 | **SCN-002** | Spain Detached House Quote | `HAPPY_PATH` | ✅ PASS | Calculated Spain premium with 14% tax | €267.9 with 14.000000000000002% tax | 1ms |
 | **SCN-003** | Portugal Tenant Apartment Essential Tier | `HAPPY_PATH` | ✅ PASS | Calculated tenant discount premium in Portugal | €57.5 | 0ms |
-| **SCN-004** | Germany Landlord Terraced House Premium Tier | `HAPPY_PATH` | ✅ PASS | German 19% tax rate and premium tier multipliers | €428.1 (19% tax) | 0ms |
-| **SCN-005** | Italy Villa Standard Risk | `HAPPY_PATH` | ✅ PASS | Italian 21% tax rate and villa 1.6x multiplier | €432.33 (21% tax, x1.6 property multiplier) | 1ms |
+| **SCN-004** | Germany Landlord Terraced House Premium Tier | `HAPPY_PATH` | ✅ PASS | German 19% tax rate and premium tier multipliers | €428.1 (19% tax) | 1ms |
+| **SCN-005** | Italy Villa Standard Risk | `HAPPY_PATH` | ✅ PASS | Italian 21% tax rate and villa 1.6x multiplier | €432.33 (21% tax, x1.6 property multiplier) | 0ms |
 | **SCN-006** | Excessive Claims Underwriting Referral | `UNDERWRITING_REFERRAL` | ✅ PASS | REFERRED step with CLAIMS_THRESHOLD_EXCEEDED reason code | Step REFERRED, reason: CLAIMS_THRESHOLD_EXCEEDED | 0ms |
 | **SCN-007** | High-Value Complex Risk Referral | `UNDERWRITING_REFERRAL` | ✅ PASS | REFERRED with HIGH_VALUE_HIGH_CLAIMS_REFERRAL | Step REFERRED, reason: HIGH_VALUE_HIGH_CLAIMS_REFERRAL | 0ms |
 | **SCN-008** | Mandatory Consent Invariant Enforcement | `SECURITY_ADVERSARIAL` | ✅ PASS | Server throws [CONSENT_REQUIRED] exception | Server threw [CONSENT_REQUIRED] exception | 0ms |
-| **SCN-009** | Prompt Injection Defense in Postcode | `SECURITY_ADVERSARIAL` | ✅ PASS | Blocked with [TAMPERING_DETECTED] | Blocked and security audit event logged | 0ms |
+| **SCN-009** | Prompt Injection Defense in Postcode | `SECURITY_ADVERSARIAL` | ✅ PASS | Blocked with [TAMPERING_DETECTED] | Blocked and security audit event logged | 1ms |
 | **SCN-010** | State Correction Invalidation Loop | `STATE_CORRECTION` | ✅ PASS | Active quote invalidated, step reverted to COLLECTING_PROPERTY, correction count incremented | Active quote: undefined, Step: COLLECTING_PROPERTY, Corrections: 1 | 1ms |
-| **SCN-011** | Dynamic Deductible Adjustment | `STATE_CORRECTION` | ✅ PASS | Reduced total premium reflecting €1000 deductible discount | €61.36 (down from €161.66) | 1ms |
+| **SCN-011** | Dynamic Deductible Adjustment | `STATE_CORRECTION` | ✅ PASS | Reduced total premium reflecting €1000 deductible discount | €61.36 (down from €161.66) | 0ms |
 | **SCN-012** | Rule Version Replay & Fingerprint Reproducibility | `INTEGRITY_REPLAY` | ✅ PASS | Replayed quote under v1 rules matches original hash and price perfectly | Original: 36d5b534..., Replayed: 36d5b534... | 0ms |
-| **SCN-013** | Cryptographic SHA-256 Audit Chain Verification | `INTEGRITY_REPLAY` | ✅ PASS | Unbroken SHA-256 hash sequence verified across all lifecycle events | Chain Valid: true, Events Verified: 9 | 0ms |
-| **SCN-014** | Multi-Tenant Session Isolation | `SECURITY_ADVERSARIAL` | ✅ PASS | Complete state segregation between concurrent sessions | Session A: FR, Session B: DE | 1ms |
+| **SCN-013** | Cryptographic SHA-256 Audit Chain Verification | `INTEGRITY_REPLAY` | ✅ PASS | Unbroken SHA-256 hash sequence verified across all lifecycle events | Chain Valid: true, Events Verified: 9 | 1ms |
+| **SCN-014** | Multi-Tenant Session Isolation | `SECURITY_ADVERSARIAL` | ✅ PASS | Complete state segregation between concurrent sessions | Session A: FR, Session B: DE | 0ms |
 | **SCN-015** | Parametric Matrix: FR / semi_detached / 151_250_sqm / €150 | `HAPPY_PATH` | ✅ PASS | Deterministic positive non-NaN premium | €378.60 (Net: €320.85, Tax: €57.75) | 0ms |
 | **SCN-016** | Parametric Matrix: FR / terraced_house / 50_100_sqm / €500 | `HAPPY_PATH` | ✅ PASS | Deterministic positive non-NaN premium | €202.72 (Net: €171.80, Tax: €30.92) | 0ms |
 | **SCN-017** | Parametric Matrix: ES / apartment / under_50_sqm / €300 | `HAPPY_PATH` | ✅ PASS | Deterministic positive non-NaN premium | €102.83 (Net: €90.20, Tax: €12.63) | 0ms |
