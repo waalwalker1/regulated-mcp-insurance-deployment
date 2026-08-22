@@ -38,4 +38,4 @@ This repository incorporates open-source libraries under permissive licenses:
 
 ## Non-Affiliation Statement
 
-Northstar Home Insurance EU is an independent technical proof-of-work demonstration kit. It is not affiliated with, endorsed by, or sponsored by Waniwani AI, Anthropic, or any commercial insurer.
+Northstar Home Insurance EU is a fictional reference domain used by this independent open-source implementation. The project is not affiliated with, endorsed by, or sponsored by Waniwani AI, Anthropic, or any commercial insurer.

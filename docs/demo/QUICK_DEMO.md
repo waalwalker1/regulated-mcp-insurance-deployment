@@ -1,27 +1,27 @@
-# 5-Minute Demonstration Script (Video / Live Recording Guide)
+# Quick Technical Demonstration (5-Minute Walkthrough Guide)
 
-## Video Timeline & Spoken Transcript
+## Timeline & Walkthrough Script
 
-### 1. Problem Statement (00:00–00:30)
+### 1. Overview & Problem Context (00:00–00:30)
 
-> _"Welcome. Today we are demonstrating the Northstar Regulated MCP Insurance Deployment Kit. In regulated European insurance, conversational AI can dramatically improve customer quote funnels, but regulations like GDPR and Solvency II forbid nondeterministic price calculations, unrecorded consent, or black-box state transitions. Here is how we solve this."_
+> _"Welcome. Today we are demonstrating the Northstar Regulated MCP Insurance reference architecture. Insurance and financial-services workflows require careful control over pricing logic, consent and lawful processing, decision traceability, data handling, and auditability. This reference implementation demonstrates one architecture for enforcing those controls around a conversational interface."_
 
 ### 2. Architecture Overview (00:30–01:00)
 
-> _"Our architecture strictly separates the conversational layer from the deterministic core. The AI assistant connects via standard Model Context Protocol (MCP). The server owns state transitions, Zod validation, pure-function pricing formulas, and an append-only audit log with SHA-256 hash chaining."_
+> _"Our architecture strictly separates conversational natural-language extraction from the deterministic server core. The client connects via standard Model Context Protocol (MCP). The compiled server owns all state transitions, Zod validation, pure-function pricing formulas, and a tamper-evident audit log with continuous SHA-256 hash chaining."_
 
-### 3. Live Quoting Demo (01:00–02:30)
+### 3. Execution of Quoting Workflow (01:00–02:30)
 
-> _"Let's run `make demo`. We initialize a new session and submit property details for an apartment in Paris. Notice how the server validates the French 5-digit postcode and advances the state to risk factors. We declare the property was built in 2010 with 0 claims. The server evaluates eligibility and prompts for coverage selection."_
+> _"Running `npm run demo`: we initialize a new quotation session and submit property details for an apartment in Paris. The server validates the French 5-digit postcode and advances the state to risk factors. We declare construction period and claims history. The server evaluates underwriting eligibility and prompts for coverage selection."_
 
-### 4. Demonstrating Invariant & Consent Enforcement (02:30–03:30)
+### 4. Invariant & Consent Enforcement (02:30–03:30)
 
-> _"Here is the hard invariant: If we attempt to calculate a quote before the customer gives consent, the server immediately rejects the request with `[CONSENT_REQUIRED]`. Once explicit consent is granted, the server executes pure actuarial formulas, outputting a €161.66 annual premium with complete multiplier breakdown and a unique SHA-256 quote fingerprint."_
+> _"Here is a key invariant: If quote calculation is attempted before the customer explicitly confirms parameters and grants consent, the server strictly rejects the request with `[CONSENT_REQUIRED]`. Once explicit consent is granted, the server executes pure actuarial formulas, outputting an indicative premium with complete multiplier breakdown and a unique SHA-256 quote fingerprint."_
 
-### 5. Correction & Adjustment Loops (03:30–04:15)
+### 5. State Correction & Dynamic Adjustment Loops (03:30–04:15)
 
-> _"If the customer decides to increase their deductible from €300 to €500, we invoke `adjust_quote`. The premium is immediately recalculated down to €126.26 without restarting the funnel. Finally, we inspect the audit trail: all 10 events are cryptographically verified with 100% chain integrity."_
+> _"If the customer adjusts their deductible from €300 to €500, we invoke `adjust_quote`. The premium recalculates deterministically to €126.26 without restarting the funnel. Finally, we inspect the audit trail: all 10 lifecycle events are cryptographically verified with 100% unbroken chain integrity."_
 
-### 6. Enterprise Deliverables & Wrap-Up (04:15–05:00)
+### 6. Enterprise Documentation & Verification (04:15–05:00)
 
-> _"Beyond code, this kit includes 16 FDE delivery documents, a 35-question security questionnaire, and a 24-scenario automated evaluation suite. The entire repository is open-source, reproducible in zero-credential local mode with `make release-check`, and production-shaped for enterprise deployment."_
+> _"Beyond the executable system, the repository includes enterprise delivery documentation covering discovery, requirements traceability, deployment planning, UAT, security review, and operational handover. The entire codebase is verified with unit, protocol, property, and 24-scenario automated evaluation suites running locally in zero-credential mode."_

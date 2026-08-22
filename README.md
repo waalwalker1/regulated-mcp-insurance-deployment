@@ -85,7 +85,7 @@ flowchart LR
 - **Dynamic Quote Adjustment:** Modify coverage tiers (`essential`, `comfort`, `premium`) and deductibles (€150 to €1000) on active quotes with idempotency protection.
 - **Official MCP Streamable HTTP Transport:** Direct `StreamableHTTPServerTransport` integration supporting stateful sessions, `/health`, and `/ready` probes.
 - **Dual Persistence Adapters:** Pluggable in-memory TTL store and real PostgreSQL adapter with parameterized SQL, schema migrations, and optimistic concurrency control.
-- **GDPR Right to Erasure:** Multi-table scrubbing removing contact emails from `quote_sessions` and `quote_history` while preserving cryptographic audit validity.
+- **Data Anonymization Workflow:** Multi-table scrubbing removing contact emails from `quote_sessions` and `quote_history` while preserving cryptographic audit validity.
 
 ---
 
@@ -252,9 +252,9 @@ The repository includes enterprise documentation templates and blueprints design
 ## Security & Privacy
 
 - **Data Minimization:** No personal data (e.g. email) is collected or processed until the explicit quotation delivery step.
-- **Cryptographic Auditability:** All state transitions and calculations append to an immutable, hash-chained audit log.
+- **Cryptographic Auditability:** All state transitions and calculations append to a tamper-evident, hash-chained audit log.
 - **Automated PII Redaction:** Structured log metadata masks email addresses and authentication tokens before hashing or logging.
-- **Right to Erasure:** Session anonymization utility scrubs PII across sessions and quote history tables while preserving audit chain integrity.
+- **Data Anonymization Workflow:** The repository includes a configurable anonymization workflow that removes contact data from active sessions and historical quote snapshots while preserving non-personal audit integrity. Real deployments must align retention, lawful basis, notices, and erasure behavior with the organization's approved data-protection policy.
 - **Prompt Injection Defense:** Input sanitizers validate formats and reject instruction injection attempts in address and metadata fields.
 
 ---

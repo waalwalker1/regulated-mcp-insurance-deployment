@@ -1,6 +1,6 @@
 {
   "name": "regulated-mcp-insurance-deployment",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "description": "Open-source reference architecture for deterministic, auditable insurance quotation workflows using MCP, Waniwani SDK, TypeScript, and PostgreSQL.",
   "type": "module",

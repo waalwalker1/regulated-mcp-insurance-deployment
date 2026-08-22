@@ -5,6 +5,14 @@ All notable changes to the Northstar Regulated MCP Insurance Deployment Kit will
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2026-08-22
+
+### Changed
+
+- **CI Pipeline Robustness:** Configured explicit user healthcheck (`pg_isready -U postgres -d northstar_insurance`) for GitHub Actions PostgreSQL service container.
+- **Documentation Normalization:** Standardized open-source attribution, third-party notices, and demonstration transcripts with neutral terminology.
+- **Audit & Privacy Phrasing:** Qualified audit trail definitions to tamper-evident cryptographic hash chaining and anonymization workflows.
+
 ## [0.3.0] - 2026-08-21
 
 ### Added
