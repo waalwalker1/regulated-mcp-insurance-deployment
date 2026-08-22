@@ -1,6 +1,6 @@
 {
   "benchmarkDate": "2026-08-21",
-  "timestamp": "2026-08-22T08:28:34.816Z",
+  "timestamp": "2026-08-22T08:31:20.195Z",
   "totalScenarios": 24,
   "passedScenarios": 24,
   "failedScenarios": 0,
@@ -32,7 +32,7 @@
       "passed": true,
       "expected": "Calculated tenant discount premium in Portugal",
       "actual": "€57.5",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-004",
@@ -41,7 +41,7 @@
       "passed": true,
       "expected": "German 19% tax rate and premium tier multipliers",
       "actual": "€428.1 (19% tax)",
-      "latencyMs": 0
+      "latencyMs": 1
     },
     {
       "id": "SCN-005",
@@ -59,7 +59,7 @@
       "passed": true,
       "expected": "REFERRED step with CLAIMS_THRESHOLD_EXCEEDED reason code",
       "actual": "Step REFERRED, reason: CLAIMS_THRESHOLD_EXCEEDED",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-007",
@@ -95,7 +95,7 @@
       "passed": true,
       "expected": "Active quote invalidated, step reverted to COLLECTING_PROPERTY, correction count incremented",
       "actual": "Active quote: undefined, Step: COLLECTING_PROPERTY, Corrections: 1",
-      "latencyMs": 0
+      "latencyMs": 2
     },
     {
       "id": "SCN-011",
@@ -104,7 +104,7 @@
       "passed": true,
       "expected": "Reduced total premium reflecting €1000 deductible discount",
       "actual": "€61.36 (down from €161.66)",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-012",
@@ -122,7 +122,7 @@
       "passed": true,
       "expected": "Unbroken SHA-256 hash sequence verified across all lifecycle events",
       "actual": "Chain Valid: true, Events Verified: 9",
-      "latencyMs": 0
+      "latencyMs": 1
     },
     {
       "id": "SCN-014",
@@ -185,7 +185,7 @@
       "passed": true,
       "expected": "Deterministic positive non-NaN premium",
       "actual": "€199.39 (Net: €173.38, Tax: €26.01)",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-021",

@@ -95,7 +95,6 @@ export class FunnelStateMachine {
       );
     }
     session.step = nextStep;
-    session.version = (session.version ?? 0) + 1;
     session.updatedAt = new Date().toISOString();
   }
 
