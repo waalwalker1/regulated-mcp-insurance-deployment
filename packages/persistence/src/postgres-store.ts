@@ -150,7 +150,6 @@ export class PostgresSessionStore implements SessionStore {
     const expiresAt =
       session.expiresAt ||
       new Date(Date.now() + this.defaultTtlSeconds * 1000).toISOString();
-    const payload = JSON.stringify(session);
     const expectedVersion = session.version ?? 1;
 
     // Check if session exists
@@ -161,6 +160,8 @@ export class PostgresSessionStore implements SessionStore {
 
     if (checkRes.rows.length === 0) {
       // New insert
+      session.version = 1;
+      const payload = JSON.stringify(session);
       await this.pool.query(
         `INSERT INTO quote_sessions (session_id, correlation_id, step, payload, version, created_at, updated_at, expires_at)
          VALUES ($1, $2, $3, $4, 1, NOW(), NOW(), $5)`,
@@ -172,17 +173,27 @@ export class PostgresSessionStore implements SessionStore {
           expiresAt,
         ],
       );
-      session.version = 1;
       return;
     }
 
     // Atomic compare-and-swap update
+    const nextVersion = expectedVersion + 1;
+    session.version = nextVersion;
+    const payload = JSON.stringify(session);
+
     const updateRes = await this.pool.query(
       `UPDATE quote_sessions
-       SET step = $1, payload = $2, version = version + 1, updated_at = NOW(), expires_at = $3
-       WHERE session_id = $4 AND version = $5
+       SET step = $1, payload = $2, version = $3, updated_at = NOW(), expires_at = $4
+       WHERE session_id = $5 AND version = $6
        RETURNING version`,
-      [session.step, payload, expiresAt, session.sessionId, expectedVersion],
+      [
+        session.step,
+        payload,
+        nextVersion,
+        expiresAt,
+        session.sessionId,
+        expectedVersion,
+      ],
     );
 
     if ((updateRes.rowCount ?? 0) === 0) {
@@ -198,13 +209,18 @@ export class PostgresSessionStore implements SessionStore {
   async getSession(sessionId: string): Promise<FunnelSession | null> {
     await this.initialize();
     const result = await this.pool.query(
-      `SELECT payload, expires_at FROM quote_sessions
+      `SELECT payload, version, expires_at FROM quote_sessions
        WHERE session_id = $1 AND expires_at > NOW()`,
       [sessionId],
     );
 
     if (result.rows.length === 0) return null;
-    return result.rows[0].payload as FunnelSession;
+    const rawPayload = result.rows[0].payload;
+    const session = (
+      typeof rawPayload === "string" ? JSON.parse(rawPayload) : rawPayload
+    ) as FunnelSession;
+    session.version = result.rows[0].version;
+    return session;
   }
 
   async deleteSession(sessionId: string): Promise<boolean> {

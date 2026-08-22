@@ -1,11 +1,11 @@
 {
   "benchmarkDate": "2026-08-21",
-  "timestamp": "2026-08-21T23:33:15.276Z",
+  "timestamp": "2026-08-22T08:28:34.816Z",
   "totalScenarios": 24,
   "passedScenarios": 24,
   "failedScenarios": 0,
   "successRatePercent": 100,
-  "totalDurationMs": 10,
+  "totalDurationMs": 8,
   "results": [
     {
       "id": "SCN-001",
@@ -59,7 +59,7 @@
       "passed": true,
       "expected": "REFERRED step with CLAIMS_THRESHOLD_EXCEEDED reason code",
       "actual": "Step REFERRED, reason: CLAIMS_THRESHOLD_EXCEEDED",
-      "latencyMs": 0
+      "latencyMs": 1
     },
     {
       "id": "SCN-007",
@@ -77,7 +77,7 @@
       "passed": true,
       "expected": "Server throws [CONSENT_REQUIRED] exception",
       "actual": "Server threw [CONSENT_REQUIRED] exception",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-009",
@@ -86,7 +86,7 @@
       "passed": true,
       "expected": "Blocked with [TAMPERING_DETECTED]",
       "actual": "Blocked and security audit event logged",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-010",
@@ -95,7 +95,7 @@
       "passed": true,
       "expected": "Active quote invalidated, step reverted to COLLECTING_PROPERTY, correction count incremented",
       "actual": "Active quote: undefined, Step: COLLECTING_PROPERTY, Corrections: 1",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-011",
@@ -122,7 +122,7 @@
       "passed": true,
       "expected": "Unbroken SHA-256 hash sequence verified across all lifecycle events",
       "actual": "Chain Valid: true, Events Verified: 9",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-014",
@@ -185,7 +185,7 @@
       "passed": true,
       "expected": "Deterministic positive non-NaN premium",
       "actual": "€199.39 (Net: €173.38, Tax: €26.01)",
-      "latencyMs": 0
+      "latencyMs": 1
     },
     {
       "id": "SCN-021",
