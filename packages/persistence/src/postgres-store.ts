@@ -66,6 +66,7 @@ export class PostgresSessionStore implements SessionStore {
         CREATE INDEX IF NOT EXISTS idx_quote_history_session_id ON quote_history(session_id);
 
         CREATE TABLE IF NOT EXISTS audit_events (
+          id BIGSERIAL,
           event_id UUID PRIMARY KEY,
           session_id UUID NOT NULL,
           correlation_id VARCHAR(128) NOT NULL,
@@ -78,7 +79,8 @@ export class PostgresSessionStore implements SessionStore {
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
 
-        CREATE INDEX IF NOT EXISTS idx_audit_events_session_id ON audit_events(session_id, created_at);
+        ALTER TABLE audit_events ADD COLUMN IF NOT EXISTS id BIGSERIAL;
+        CREATE INDEX IF NOT EXISTS idx_audit_events_session_id ON audit_events(session_id, id ASC);
 
         CREATE TABLE IF NOT EXISTS idempotency_records (
           idempotency_key VARCHAR(255) PRIMARY KEY,

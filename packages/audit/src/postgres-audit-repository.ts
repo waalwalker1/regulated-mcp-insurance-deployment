@@ -41,7 +41,7 @@ export class PostgresAuditRepository implements AuditRepository {
   async getEventsBySession(sessionId: string): Promise<AuditEvent[]> {
     const res = await this.pool.query(
       `SELECT event_id, session_id, correlation_id, event_type, actor, rule_version, metadata, previous_hash, current_hash, created_at
-       FROM audit_events WHERE session_id = $1 ORDER BY created_at ASC`,
+       FROM audit_events WHERE session_id = $1 ORDER BY id ASC`,
       [sessionId],
     );
 
@@ -62,7 +62,7 @@ export class PostgresAuditRepository implements AuditRepository {
   async getEventsByCorrelationId(correlationId: string): Promise<AuditEvent[]> {
     const res = await this.pool.query(
       `SELECT event_id, session_id, correlation_id, event_type, actor, rule_version, metadata, previous_hash, current_hash, created_at
-       FROM audit_events WHERE correlation_id = $1 ORDER BY created_at ASC`,
+       FROM audit_events WHERE correlation_id = $1 ORDER BY id ASC`,
       [correlationId],
     );
 
@@ -82,7 +82,7 @@ export class PostgresAuditRepository implements AuditRepository {
 
   async getLastHash(sessionId: string): Promise<string | null> {
     const res = await this.pool.query(
-      `SELECT current_hash FROM audit_events WHERE session_id = $1 ORDER BY created_at DESC LIMIT 1`,
+      `SELECT current_hash FROM audit_events WHERE session_id = $1 ORDER BY id DESC LIMIT 1`,
       [sessionId],
     );
     if (res.rows.length === 0) return null;

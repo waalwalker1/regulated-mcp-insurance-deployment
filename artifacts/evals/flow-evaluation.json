@@ -1,6 +1,6 @@
 {
   "benchmarkDate": "2026-08-21",
-  "timestamp": "2026-08-22T08:31:20.195Z",
+  "timestamp": "2026-08-22T08:34:18.130Z",
   "totalScenarios": 24,
   "passedScenarios": 24,
   "failedScenarios": 0,
@@ -41,7 +41,7 @@
       "passed": true,
       "expected": "German 19% tax rate and premium tier multipliers",
       "actual": "€428.1 (19% tax)",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-005",
@@ -50,7 +50,7 @@
       "passed": true,
       "expected": "Italian 21% tax rate and villa 1.6x multiplier",
       "actual": "€432.33 (21% tax, x1.6 property multiplier)",
-      "latencyMs": 0
+      "latencyMs": 1
     },
     {
       "id": "SCN-006",
@@ -95,7 +95,7 @@
       "passed": true,
       "expected": "Active quote invalidated, step reverted to COLLECTING_PROPERTY, correction count incremented",
       "actual": "Active quote: undefined, Step: COLLECTING_PROPERTY, Corrections: 1",
-      "latencyMs": 2
+      "latencyMs": 1
     },
     {
       "id": "SCN-011",
@@ -104,7 +104,7 @@
       "passed": true,
       "expected": "Reduced total premium reflecting €1000 deductible discount",
       "actual": "€61.36 (down from €161.66)",
-      "latencyMs": 0
+      "latencyMs": 1
     },
     {
       "id": "SCN-012",
@@ -122,7 +122,7 @@
       "passed": true,
       "expected": "Unbroken SHA-256 hash sequence verified across all lifecycle events",
       "actual": "Chain Valid: true, Events Verified: 9",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "SCN-014",
@@ -131,7 +131,7 @@
       "passed": true,
       "expected": "Complete state segregation between concurrent sessions",
       "actual": "Session A: FR, Session B: DE",
-      "latencyMs": 0
+      "latencyMs": 1
     },
     {
       "id": "SCN-015",
