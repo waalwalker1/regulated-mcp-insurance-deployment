@@ -10,13 +10,13 @@
 | Scenario ID | Name | Category | Result | Expected | Actual | Latency |
 |---|---|---|---|---|---|---|
 | **SCN-001** | France Apartment Standard Quote | `HAPPY_PATH` | ✅ PASS | €161.66 annual premium, active status | €161.66 annual premium, active status | 3ms |
-| **SCN-002** | Spain Detached House Quote | `HAPPY_PATH` | ✅ PASS | Calculated Spain premium with 14% tax | €267.9 with 14.000000000000002% tax | 0ms |
-| **SCN-003** | Portugal Tenant Apartment Essential Tier | `HAPPY_PATH` | ✅ PASS | Calculated tenant discount premium in Portugal | €57.5 | 1ms |
-| **SCN-004** | Germany Landlord Terraced House Premium Tier | `HAPPY_PATH` | ✅ PASS | German 19% tax rate and premium tier multipliers | €428.1 (19% tax) | 0ms |
-| **SCN-005** | Italy Villa Standard Risk | `HAPPY_PATH` | ✅ PASS | Italian 21% tax rate and villa 1.6x multiplier | €432.33 (21% tax, x1.6 property multiplier) | 1ms |
+| **SCN-002** | Spain Detached House Quote | `HAPPY_PATH` | ✅ PASS | Calculated Spain premium with 14% tax | €267.9 with 14.000000000000002% tax | 1ms |
+| **SCN-003** | Portugal Tenant Apartment Essential Tier | `HAPPY_PATH` | ✅ PASS | Calculated tenant discount premium in Portugal | €57.5 | 0ms |
+| **SCN-004** | Germany Landlord Terraced House Premium Tier | `HAPPY_PATH` | ✅ PASS | German 19% tax rate and premium tier multipliers | €428.1 (19% tax) | 1ms |
+| **SCN-005** | Italy Villa Standard Risk | `HAPPY_PATH` | ✅ PASS | Italian 21% tax rate and villa 1.6x multiplier | €432.33 (21% tax, x1.6 property multiplier) | 0ms |
 | **SCN-006** | Excessive Claims Underwriting Referral | `UNDERWRITING_REFERRAL` | ✅ PASS | REFERRED step with CLAIMS_THRESHOLD_EXCEEDED reason code | Step REFERRED, reason: CLAIMS_THRESHOLD_EXCEEDED | 0ms |
 | **SCN-007** | High-Value Complex Risk Referral | `UNDERWRITING_REFERRAL` | ✅ PASS | REFERRED with HIGH_VALUE_HIGH_CLAIMS_REFERRAL | Step REFERRED, reason: HIGH_VALUE_HIGH_CLAIMS_REFERRAL | 0ms |
-| **SCN-008** | Mandatory Consent Invariant Enforcement | `SECURITY_ADVERSARIAL` | ✅ PASS | Server throws [CONSENT_REQUIRED] exception | Server threw [CONSENT_REQUIRED] exception | 3ms |
+| **SCN-008** | Mandatory Consent Invariant Enforcement | `SECURITY_ADVERSARIAL` | ✅ PASS | Server throws [CONSENT_REQUIRED] exception | Server threw [CONSENT_REQUIRED] exception | 2ms |
 | **SCN-009** | Prompt Injection Defense in Postcode | `SECURITY_ADVERSARIAL` | ✅ PASS | Blocked with [TAMPERING_DETECTED] | Blocked and security audit event logged | 0ms |
 | **SCN-010** | State Correction Invalidation Loop | `STATE_CORRECTION` | ✅ PASS | Active quote invalidated, step reverted to COLLECTING_PROPERTY, correction count incremented | Active quote: undefined, Step: COLLECTING_PROPERTY, Corrections: 1 | 1ms |
 | **SCN-011** | Dynamic Deductible Adjustment | `STATE_CORRECTION` | ✅ PASS | Reduced total premium reflecting €1000 deductible discount | €61.36 (down from €161.66) | 1ms |

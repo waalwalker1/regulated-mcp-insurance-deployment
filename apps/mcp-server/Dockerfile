@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY .npmrc ./
 COPY packages/ ./packages/
-COPY apps/mcp-server/ ./apps/mcp-server/
+COPY apps/ ./apps/
 COPY tsconfig.json ./
 
 RUN npm ci
@@ -17,4 +17,4 @@ EXPOSE 3000
 ENV NODE_ENV=production
 ENV PORT=3000
 
-CMD ["npx", "tsx", "apps/mcp-server/src/index.ts"]
+CMD ["./node_modules/.bin/tsx", "apps/mcp-server/src/index.ts"]

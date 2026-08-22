@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY .npmrc ./
 COPY packages/ ./packages/
-COPY apps/pricing-service/ ./apps/pricing-service/
+COPY apps/ ./apps/
 COPY tsconfig.json ./
 
 RUN npm ci
@@ -17,4 +17,4 @@ EXPOSE 3001
 ENV NODE_ENV=production
 ENV PORT=3001
 
-CMD ["npx", "tsx", "apps/pricing-service/src/index.ts"]
+CMD ["./node_modules/.bin/tsx", "apps/pricing-service/src/index.ts"]

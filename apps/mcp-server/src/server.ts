@@ -741,7 +741,7 @@ export async function startHttpMcpServer(
     await transport.handleRequest(req.raw, reply.raw, req.body);
   });
 
-  const host = process.env.MCP_HOST || "127.0.0.1";
+  const host = process.env.MCP_HOST || "0.0.0.0";
   await app.listen({ port, host });
   console.log(
     `[Northstar MCP Server] Listening over official Streamable HTTP transport on port ${port}`,

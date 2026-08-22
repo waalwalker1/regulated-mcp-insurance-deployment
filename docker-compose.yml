@@ -29,10 +29,11 @@ services:
       PORT: 3001
       NODE_ENV: production
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
   mcp-server:
     build:
@@ -55,10 +56,11 @@ services:
       DATABASE_URL: postgresql://northstar:northstar_dev_pass@postgres:5432/northstar_quotes
       PRICING_SERVICE_URL: http://pricing-service:3001
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
 volumes:
   pgdata:
